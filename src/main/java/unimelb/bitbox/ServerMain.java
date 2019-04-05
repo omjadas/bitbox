@@ -10,16 +10,16 @@ import unimelb.bitbox.util.FileSystemObserver;
 import unimelb.bitbox.util.FileSystemManager.FileSystemEvent;
 
 public class ServerMain implements FileSystemObserver {
-	private static Logger log = Logger.getLogger(ServerMain.class.getName());
-	protected FileSystemManager fileSystemManager;
-	
-	public ServerMain() throws NumberFormatException, IOException, NoSuchAlgorithmException {
-		fileSystemManager=new FileSystemManager(Configuration.getConfigurationValue("path"),this);
-	}
+    private static Logger log = Logger.getLogger(ServerMain.class.getName());
+    protected FileSystemManager fileSystemManager;
 
-	@Override
-	public void processFileSystemEvent(FileSystemEvent fileSystemEvent) {
-		// TODO: process events
-	}
-	
+    public ServerMain() throws NumberFormatException, IOException, NoSuchAlgorithmException {
+        fileSystemManager = new FileSystemManager(Configuration.getConfigurationValue("path"), this);
+    }
+
+    @Override
+    public void processFileSystemEvent(FileSystemEvent fileSystemEvent) {
+        // TODO: process events
+    }
+
 }
