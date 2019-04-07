@@ -46,7 +46,8 @@ public class FileBytesRequest implements Action {
         fileDescriptor.append("fileSize", this.fileDescriptor.fileSize);
 
         message.append("command", command);
-        message.append("hostPort", fileDescriptor);
+        message.append("fileDescriptor", fileDescriptor);
+        message.append("pathName", pathName);
         message.append("position", position);
         message.append("length", length);
 
