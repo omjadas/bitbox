@@ -40,6 +40,11 @@ public class HandshakeRequest implements Action {
         }
     }
 
+    /**
+     * Convert the action to JSON
+     * 
+     * @return JSON string
+     */
     private String toJSON() {
         Document message = new Document();
         Document hostPort = new Document();

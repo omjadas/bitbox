@@ -40,6 +40,11 @@ public class ConnectionRefused implements Action {
         }
     }
 
+    /**
+     * Convert the action to JSON
+     * 
+     * @return JSON string
+     */
     private String toJSON() {
         Document message = new Document();
         ArrayList<Document> peers = new ArrayList<Document>();

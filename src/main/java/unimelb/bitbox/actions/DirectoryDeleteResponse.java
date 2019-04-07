@@ -42,6 +42,11 @@ public class DirectoryDeleteResponse implements Action {
         }
     }
 
+    /**
+     * Convert the action to JSON
+     * 
+     * @return JSON string
+     */
     private String toJSON() {
         Document message = new Document();
 

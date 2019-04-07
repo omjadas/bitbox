@@ -46,6 +46,11 @@ public class FileModifyResponse implements Action {
         }
     }
 
+    /**
+     * Convert the action to JSON
+     * 
+     * @return JSON string
+     */
     private String toJSON() {
         Document message = new Document();
         Document fileDescriptor = new Document();
