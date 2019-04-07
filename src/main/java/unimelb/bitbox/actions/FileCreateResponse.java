@@ -4,10 +4,12 @@ import java.net.Socket;
 
 public class FileCreateResponse implements Action {
 
+    private Socket socket;
     private static final String command = "FILE_CREATE_RESPONSE";
     private String pathName;
 
-    public FileCreateResponse(String pathName) {
+    public FileCreateResponse(Socket socket, String pathName) {
+        this.socket = socket;
         this.pathName = pathName;
     }
 

@@ -4,10 +4,11 @@ import java.net.Socket;
 
 public class ConnectionRefused implements Action {
 
+    private Socket socket;
     private static final String command = "CONNECTION_REFUSED";
 
     public ConnectionRefused(Socket socket) {
-
+        this.socket = socket;
     }
 
     @Override

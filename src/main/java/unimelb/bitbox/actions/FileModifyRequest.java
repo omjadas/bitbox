@@ -4,10 +4,12 @@ import java.net.Socket;
 
 public class FileModifyRequest implements Action {
 
+    private Socket socket;
     private static String command = "FILE_MODIFY_REQUEST";
     private String pathName;
 
-    public FileModifyRequest(String pathName) {
+    public FileModifyRequest(Socket socket, String pathName) {
+        this.socket = socket;
         this.pathName = pathName;
     }
 

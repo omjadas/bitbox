@@ -4,10 +4,11 @@ import java.net.Socket;
 
 public class HandshakeResponse implements Action {
 
+    private Socket socket;
     private static final String command = "HANDSHAKE_RESPONSE";
 
-    public HandshakeResponse() {
-
+    public HandshakeResponse(Socket socket) {
+        this.socket = socket;
     }
 
     @Override

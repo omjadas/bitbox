@@ -4,10 +4,11 @@ import java.net.Socket;
 
 public class InvalidProtocol implements Action {
 
+    private Socket socket;
     private static final String command = "INVALID_PROTOCOL";
 
-    public InvalidProtocol() {
-
+    public InvalidProtocol(Socket socket) {
+        this.socket = socket;
     }
 
     @Override

@@ -4,10 +4,12 @@ import java.net.Socket;
 
 public class FileDeleteRequest implements Action {
 
+    private Socket socket;
     private static final String command = "FILE_DELETE_REQUEST";
     private String pathName;
 
-    public FileDeleteRequest(String pathName) {
+    public FileDeleteRequest(Socket socket, String pathName) {
+        this.socket = socket;
         this.pathName = pathName;
     }
 

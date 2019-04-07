@@ -4,10 +4,12 @@ import java.net.Socket;
 
 public class FileBytesRequest implements Action {
 
+    private Socket socket;
     private static final String command = "FILE_BYTES_REQUEST";
     private String pathName;
 
-    public FileBytesRequest(String pathName) {
+    public FileBytesRequest(Socket socket, String pathName) {
+        this.socket = socket;
         this.pathName = pathName;
     }
 

@@ -4,10 +4,12 @@ import java.net.Socket;
 
 public class DirectoryCreateRequest implements Action {
 
+    private Socket socket;
     private static final String command = "DIRECTORY_CREATE_REQUEST";
     private String pathName;
 
-    public DirectoryCreateRequest(String pathName) {
+    public DirectoryCreateRequest(Socket socket, String pathName) {
+        this.socket = socket;
         this.pathName = pathName;
     }
 
