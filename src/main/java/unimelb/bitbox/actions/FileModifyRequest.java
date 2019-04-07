@@ -7,10 +7,12 @@ public class FileModifyRequest implements Action {
 
     private Socket socket;
     private static String command = "FILE_MODIFY_REQUEST";
+    private FileDescriptor fileDescriptor;
     private String pathName;
 
-    public FileModifyRequest(Socket socket, String pathName) {
+    public FileModifyRequest(Socket socket, FileDescriptor fileDescriptor, String pathName) {
         this.socket = socket;
+        this.fileDescriptor = fileDescriptor;
         this.pathName = pathName;
     }
 
