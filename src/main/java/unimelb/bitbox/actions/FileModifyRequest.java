@@ -2,6 +2,7 @@ package unimelb.bitbox.actions;
 
 public class FileModifyRequest implements Action {
 
+    private static String command = "FILE_MODIFY_REQUEST";
     private String pathName;
 
     public FileModifyRequest(String pathName) {
