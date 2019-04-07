@@ -11,7 +11,6 @@ public class Client {
     public Client(String address, int port) {
         try {
             this.clientSocket = new Socket(address, port);
-
         } catch (IOException e) {
             e.printStackTrace();
         }
