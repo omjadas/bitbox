@@ -7,10 +7,12 @@ public class FileCreateRequest implements Action {
 
     private Socket socket;
     private static final String command = "FILE_CREATE_REQUEST";
+    private FileDescriptor fileDescriptor;
     private String pathName;
 
-    public FileCreateRequest(Socket socket, String pathName) {
+    public FileCreateRequest(Socket socket, FileDescriptor fileDescriptor, String pathName) {
         this.socket = socket;
+        this.fileDescriptor = fileDescriptor;
         this.pathName = pathName;
     }
 
