@@ -7,10 +7,14 @@ public class DirectoryDeleteResponse implements Action {
     private Socket socket;
     private static final String command = "DIRECTORY_DELETE_RESPONSE";
     private String pathName;
+    private String message;
+    private Boolean status;
 
-    public DirectoryDeleteResponse(Socket socket, String pathName) {
+    public DirectoryDeleteResponse(Socket socket, String pathName, String message, Boolean status) {
         this.socket = socket;
         this.pathName = pathName;
+        this.message = message;
+        this.status = status;
     }
 
     @Override
