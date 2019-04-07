@@ -1,5 +1,7 @@
 package unimelb.bitbox.actions;
 
+import java.net.Socket;
+
 public class FileDeleteRequest implements Action {
 
     private static final String command = "FILE_DELETE_REQUEST";
@@ -17,6 +19,11 @@ public class FileDeleteRequest implements Action {
     @Override
     public int compare(Action action) {
         return 0;
+    }
+
+    @Override
+    public void send() {
+
     }
 
 }

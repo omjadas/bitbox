@@ -1,5 +1,7 @@
 package unimelb.bitbox.actions;
 
+import java.net.Socket;
+
 public class DirectoryDeleteResponse implements Action {
 
     private static final String command = "DIRECTORY_DELETE_RESPONSE";
@@ -17,6 +19,11 @@ public class DirectoryDeleteResponse implements Action {
     @Override
     public int compare(Action action) {
         return 0;
+    }
+
+    @Override
+    public void send() {
+
     }
 
 }

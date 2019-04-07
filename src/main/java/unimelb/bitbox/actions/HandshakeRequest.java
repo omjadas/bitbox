@@ -1,5 +1,7 @@
 package unimelb.bitbox.actions;
 
+import java.net.Socket;
+
 public class HandshakeRequest implements Action {
 
     private static final String command = "HANDSHAKE_REQUEST";
@@ -16,6 +18,11 @@ public class HandshakeRequest implements Action {
     @Override
     public int compare(Action action) {
         return 0;
+    }
+
+    @Override
+    public void send() {
+
     }
 
 }

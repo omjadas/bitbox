@@ -1,5 +1,7 @@
 package unimelb.bitbox.actions;
 
+import java.net.Socket;
+
 public class InvalidProtocol implements Action {
 
     private static final String command = "INVALID_PROTOCOL";
@@ -16,6 +18,11 @@ public class InvalidProtocol implements Action {
     @Override
     public int compare(Action action) {
         return 0;
+    }
+
+    @Override
+    public void send() {
+
     }
 
 }
