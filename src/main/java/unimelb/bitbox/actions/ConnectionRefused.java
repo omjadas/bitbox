@@ -46,8 +46,8 @@ public class ConnectionRefused implements Action {
 
         for (Client client : Client.establishedClients) {
             Document peer = new Document();
-            peer.append("host", client.host);
-            peer.append("port", client.port);
+            peer.append("host", client.getHost());
+            peer.append("port", client.getPort());
 
             peers.add(peer);
         }

@@ -7,8 +7,8 @@ import java.util.ArrayList;
 public class Client {
     public static ArrayList<Client> establishedClients;
     private Socket clientSocket;
-    public String host;
-    public int port;
+    private String host;
+    private int port;
 
     public Client(String host, int port) {
         this.host = host;
@@ -24,11 +24,12 @@ public class Client {
 
     }
 
-    public void initiateHandshake() {
-
+    public String getHost() {
+        return host;
     }
 
-    public void respondToHandshake() {
-
+    public int getPort() {
+        return port;
     }
+
 }
