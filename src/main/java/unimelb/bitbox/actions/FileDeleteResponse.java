@@ -47,7 +47,7 @@ public class FileDeleteResponse implements Action {
         message.append("command", command);
         message.append("fileDescriptor", fileDescriptor);
         message.append("pathName", pathName);
-        message.append("message", message);
+        message.append("message", this.message);
         message.append("status", status);
 
         return message.toJson();
