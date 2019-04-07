@@ -1,5 +1,8 @@
 package unimelb.bitbox.actions;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.net.Socket;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager.FileDescriptor;
@@ -40,7 +43,13 @@ public class FileBytesResponse implements Action {
 
     @Override
     public void send() {
-
+        try {
+            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF8"));
+            out.write(toJSON());
+            out.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private String toJSON() {
