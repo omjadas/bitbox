@@ -1,6 +1,7 @@
 package unimelb.bitbox.actions;
 
 import java.net.Socket;
+import unimelb.bitbox.util.Document;
 
 public class HandshakeResponse implements Action {
 
@@ -28,6 +29,19 @@ public class HandshakeResponse implements Action {
     @Override
     public void send() {
 
+    }
+
+    private String toJSON() {
+        Document message = new Document();
+        Document hostPort = new Document();
+
+        hostPort.append("host", host);
+        hostPort.append("port", port);
+
+        message.append("command", command);
+        message.append("hostPort", hostPort);
+
+        return message.toJson();
     }
 
 }
