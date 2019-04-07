@@ -1,6 +1,7 @@
 package unimelb.bitbox.actions;
 
 import java.net.Socket;
+import unimelb.bitbox.util.Document;
 
 public class DirectoryDeleteResponse implements Action {
 
@@ -30,6 +31,17 @@ public class DirectoryDeleteResponse implements Action {
     @Override
     public void send() {
 
+    }
+
+    private String toJSON() {
+        Document message = new Document();
+
+        message.append("command", command);
+        message.append("pathName", pathName);
+        message.append("message", this.message);
+        message.append("status", status);
+
+        return message.toJson();
     }
 
 }
