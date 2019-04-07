@@ -1,6 +1,7 @@
 package unimelb.bitbox.actions;
 
 import java.net.Socket;
+import unimelb.bitbox.util.Document;
 
 public class DirectoryCreateRequest implements Action {
 
@@ -26,6 +27,15 @@ public class DirectoryCreateRequest implements Action {
     @Override
     public void send() {
 
+    }
+
+    private String toJSON() {
+        Document message = new Document();
+
+        message.append("command", command);
+        message.append("pathName", pathName);
+
+        return message.toJson();
     }
 
 }
