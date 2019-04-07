@@ -7,10 +7,14 @@ import java.util.ArrayList;
 public class Client {
     public static ArrayList<Client> establishedClients;
     private Socket clientSocket;
+    public String host;
+    public int port;
 
-    public Client(String address, int port) {
+    public Client(String host, int port) {
+        this.host = host;
+        this.port = port;
         try {
-            this.clientSocket = new Socket(address, port);
+            this.clientSocket = new Socket(host, port);
         } catch (IOException e) {
             e.printStackTrace();
         }
