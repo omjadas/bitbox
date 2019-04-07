@@ -6,9 +6,11 @@ public class InvalidProtocol implements Action {
 
     private Socket socket;
     private static final String command = "INVALID_PROTOCOL";
+    private String message;
 
-    public InvalidProtocol(Socket socket) {
+    public InvalidProtocol(Socket socket, String message) {
         this.socket = socket;
+        this.message = message;
     }
 
     @Override
