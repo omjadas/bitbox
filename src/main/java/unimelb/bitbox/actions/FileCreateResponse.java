@@ -9,11 +9,15 @@ public class FileCreateResponse implements Action {
     private static final String command = "FILE_CREATE_RESPONSE";
     private FileDescriptor fileDescriptor;
     private String pathName;
+    private String message;
+    private Boolean status;
 
-    public FileCreateResponse(Socket socket, FileDescriptor fileDescriptor, String pathName) {
+    public FileCreateResponse(Socket socket, FileDescriptor fileDescriptor, String pathName, String message, Boolean status) {
         this.socket = socket;
         this.fileDescriptor = fileDescriptor;
         this.pathName = pathName;
+        this.message = message;
+        this.status = status;
     }
 
     @Override
