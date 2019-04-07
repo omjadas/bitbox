@@ -16,7 +16,8 @@ public class FileModifyResponse implements Action {
     private String message;
     private Boolean status;
 
-    public FileModifyResponse(Socket socket, FileDescriptor fileDescriptor, String pathName, String message, Boolean status) {
+    public FileModifyResponse(Socket socket, FileDescriptor fileDescriptor, String pathName, String message,
+            Boolean status) {
         this.socket = socket;
         this.fileDescriptor = fileDescriptor;
         this.pathName = pathName;

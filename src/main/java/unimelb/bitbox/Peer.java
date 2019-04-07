@@ -31,6 +31,6 @@ public class Peer extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
+
 }
