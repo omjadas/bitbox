@@ -2,6 +2,10 @@ package unimelb.bitbox.actions;
 
 public class InvalidProtocol implements Action {
 
+    public InvalidProtocol() {
+
+    }
+
     @Override
     public void execute() {
 

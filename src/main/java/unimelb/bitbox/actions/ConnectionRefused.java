@@ -2,6 +2,10 @@ package unimelb.bitbox.actions;
 
 public class ConnectionRefused implements Action {
 
+    public ConnectionRefused() {
+
+    }
+
     @Override
     public void execute() {
 

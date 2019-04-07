@@ -2,6 +2,12 @@ package unimelb.bitbox.actions;
 
 public class FileCreate implements Action {
 
+    private String pathName;
+
+    public FileCreate() {
+
+    }
+
     @Override
     public void execute() {
 
