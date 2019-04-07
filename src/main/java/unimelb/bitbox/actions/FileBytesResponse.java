@@ -7,11 +7,23 @@ public class FileBytesResponse implements Action {
 
     private Socket socket;
     private static final String command = "FILE_BYTES_RESPONSE";
+    private FileDescriptor fileDescriptor;
     private String pathName;
+    private int position;
+    private int length;
+    private String content;
+    private String message;
+    private Boolean status;
 
-    public FileBytesResponse(Socket socket, String pathName, int position, int length, String content, String message, Boolean status) {
+    public FileBytesResponse(Socket socket, FileDescriptor fileDescriptor, String pathName, int position, int length, String content, String message, Boolean status) {
         this.socket = socket;
+        this.fileDescriptor = fileDescriptor;
         this.pathName = pathName;
+        this.position = position;
+        this.length = length;
+        this.content = content;
+        this.message = message;
+        this.status = status;
     }
 
     @Override
