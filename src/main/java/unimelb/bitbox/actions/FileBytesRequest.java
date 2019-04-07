@@ -1,6 +1,7 @@
 package unimelb.bitbox.actions;
 
 import java.net.Socket;
+import unimelb.bitbox.util.FileSystemManager.FileDescriptor;
 
 public class FileBytesRequest implements Action {
 
