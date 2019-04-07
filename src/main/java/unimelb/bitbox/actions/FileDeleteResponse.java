@@ -7,11 +7,17 @@ public class FileDeleteResponse implements Action {
 
     private Socket socket;
     private static final String command = "FILE_DELETE_RESPONSE";
+    private FileDescriptor fileDescriptor;
     private String pathName;
+    private String message;
+    private Boolean status;
 
-    public FileDeleteResponse(Socket socket, String pathName) {
+    public FileDeleteResponse(Socket socket, FileDescriptor fileDescriptor, String pathName, String message, Boolean status) {
         this.socket = socket;
+        this.fileDescriptor = fileDescriptor;
         this.pathName = pathName;
+        this.message = message;
+        this.status = status;
     }
 
     @Override
