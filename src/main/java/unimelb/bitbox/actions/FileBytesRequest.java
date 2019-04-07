@@ -1,6 +1,8 @@
 package unimelb.bitbox.actions;
 
 import java.net.Socket;
+
+import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager.FileDescriptor;
 
 public class FileBytesRequest implements Action {
@@ -33,6 +35,22 @@ public class FileBytesRequest implements Action {
     @Override
     public void send() {
 
+    }
+
+    private String toJSON() {
+        Document message = new Document();
+        Document fileDescriptor = new Document();
+
+        fileDescriptor.append("md5", this.fileDescriptor.md5);
+        fileDescriptor.append("lastModified", this.fileDescriptor.lastModified);
+        fileDescriptor.append("fileSize", this.fileDescriptor.fileSize);
+
+        message.append("command", command);
+        message.append("hostPort", fileDescriptor);
+        message.append("position", position);
+        message.append("length", length);
+
+        return message.toJson();
     }
 
 }
