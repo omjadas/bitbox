@@ -7,10 +7,12 @@ public class FileDeleteRequest implements Action {
 
     private Socket socket;
     private static final String command = "FILE_DELETE_REQUEST";
+    private FileDescriptor fileDescriptor;
     private String pathName;
 
-    public FileDeleteRequest(Socket socket, String pathName) {
+    public FileDeleteRequest(Socket socket, FileDescriptor fileDescriptor, String pathName) {
         this.socket = socket;
+        this.fileDescriptor = fileDescriptor;
         this.pathName = pathName;
     }
 
