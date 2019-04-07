@@ -4,8 +4,8 @@ public class DirectoryDeleteRequest implements Action {
 
     private String pathName;
 
-    public DirectoryDeleteRequest() {
-
+    public DirectoryDeleteRequest(String pathName) {
+        this.pathName = pathName;
     }
 
     @Override

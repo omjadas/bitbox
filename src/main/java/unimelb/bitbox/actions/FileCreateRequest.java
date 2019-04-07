@@ -4,8 +4,8 @@ public class FileCreateRequest implements Action {
 
     private String pathName;
 
-    public FileCreateRequest() {
-
+    public FileCreateRequest(String pathName) {
+        this.pathName = pathName;
     }
 
     @Override

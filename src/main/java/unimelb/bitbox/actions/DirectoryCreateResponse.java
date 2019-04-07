@@ -4,8 +4,8 @@ public class DirectoryCreateResponse implements Action {
 
     private String pathName;
 
-    public DirectoryCreateResponse() {
-
+    public DirectoryCreateResponse(String pathName) {
+        this.pathName = pathName;
     }
 
     @Override

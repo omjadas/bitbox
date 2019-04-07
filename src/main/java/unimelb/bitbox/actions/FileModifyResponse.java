@@ -4,8 +4,8 @@ public class FileModifyResponse implements Action {
 
     private String pathName;
 
-    public FileModifyResponse() {
-
+    public FileModifyResponse(String pathName) {
+        this.pathName = pathName;
     }
 
     @Override

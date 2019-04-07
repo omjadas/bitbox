@@ -4,8 +4,8 @@ public class FileBytesResponse implements Action {
 
     private String pathName;
 
-    public FileBytesResponse() {
-
+    public FileBytesResponse(String pathName) {
+        this.pathName = pathName;
     }
 
     @Override

@@ -4,8 +4,8 @@ public class FileBytesRequest implements Action {
 
     private String pathName;
 
-    public FileBytesRequest() {
-
+    public FileBytesRequest(String pathName) {
+        this.pathName = pathName;
     }
 
     @Override

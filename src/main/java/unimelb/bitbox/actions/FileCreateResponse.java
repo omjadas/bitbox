@@ -4,8 +4,8 @@ public class FileCreateResponse implements Action {
 
     private String pathName;
 
-    public FileCreateResponse() {
-
+    public FileCreateResponse(String pathName) {
+        this.pathName = pathName;
     }
 
     @Override

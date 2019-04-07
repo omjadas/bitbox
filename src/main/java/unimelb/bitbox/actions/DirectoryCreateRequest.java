@@ -4,8 +4,8 @@ public class DirectoryCreateRequest implements Action {
 
     private String pathName;
 
-    public DirectoryCreateRequest() {
-
+    public DirectoryCreateRequest(String pathName) {
+        this.pathName = pathName;
     }
 
     @Override

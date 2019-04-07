@@ -2,10 +2,10 @@ package unimelb.bitbox.actions;
 
 public class FileDeleteRequest implements Action {
 
-    private String FileDelete;
+    private String pathName;
 
-    public FileDeleteRequest() {
-
+    public FileDeleteRequest(String pathName) {
+        this.pathName = pathName;
     }
 
     @Override
