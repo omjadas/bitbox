@@ -1,10 +1,10 @@
 package unimelb.bitbox.actions;
 
-public class FileDelete implements Action {
+public class FileDeleteResponse implements Action {
 
     private String FileDelete;
 
-    public FileDelete() {
+    public FileDeleteResponse() {
 
     }
 

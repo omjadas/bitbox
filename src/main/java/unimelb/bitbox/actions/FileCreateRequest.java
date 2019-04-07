@@ -1,10 +1,10 @@
 package unimelb.bitbox.actions;
 
-public class FileModify implements Action {
+public class FileCreateRequest implements Action {
 
     private String pathName;
 
-    public FileModify() {
+    public FileCreateRequest() {
 
     }
 

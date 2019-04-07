@@ -1,10 +1,10 @@
 package unimelb.bitbox.actions;
 
-public class FileBytes implements Action {
+public class FileModifyResponse implements Action {
 
     private String pathName;
 
-    public FileBytes() {
+    public FileModifyResponse() {
 
     }
 

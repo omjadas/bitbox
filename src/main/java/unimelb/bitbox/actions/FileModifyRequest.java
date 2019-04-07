@@ -1,10 +1,10 @@
 package unimelb.bitbox.actions;
 
-public class DirectoryDelete implements Action {
+public class FileModifyRequest implements Action {
 
     private String pathName;
 
-    public DirectoryDelete() {
+    public FileModifyRequest() {
 
     }
 

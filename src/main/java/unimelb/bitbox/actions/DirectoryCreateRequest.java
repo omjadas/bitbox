@@ -1,8 +1,10 @@
 package unimelb.bitbox.actions;
 
-public class Handshake implements Action {
+public class DirectoryCreateRequest implements Action {
 
-    public Handshake() {
+    private String pathName;
+
+    public DirectoryCreateRequest() {
 
     }
 

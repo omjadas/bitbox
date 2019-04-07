@@ -1,10 +1,10 @@
 package unimelb.bitbox.actions;
 
-public class DirectoryCreate implements Action {
+public class DirectoryCreateResponse implements Action {
 
     private String pathName;
 
-    public DirectoryCreate() {
+    public DirectoryCreateResponse() {
 
     }
 
