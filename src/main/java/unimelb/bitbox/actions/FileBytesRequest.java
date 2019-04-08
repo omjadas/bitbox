@@ -27,7 +27,15 @@ public class FileBytesRequest implements Action {
 
     @Override
     public void execute() {
+        String message = "";
+        String content = "";
+        Boolean status = true;
 
+        // TODO: Execute action
+
+        Action response = new FileBytesResponse(socket, fileDescriptor, pathName, position, length, content, message,
+                status);
+        response.send();
     }
 
     @Override

@@ -19,7 +19,13 @@ public class DirectoryDeleteRequest implements Action {
 
     @Override
     public void execute() {
+        String message = "";
+        Boolean status = true;
 
+        // TODO: Execute action
+
+        Action response = new DirectoryDeleteResponse(socket, pathName, message, status);
+        response.send();
     }
 
     @Override

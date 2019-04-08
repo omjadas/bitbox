@@ -21,7 +21,18 @@ public class HandshakeRequest implements Action {
 
     @Override
     public void execute() {
+        Boolean refused = true;
+        String message = "";
+        Action response;
 
+        // TODO: Execute action
+
+        if (refused) {
+            response = new ConnectionRefused(socket, message);
+        } else {
+            response = new HandshakeResponse(socket, host, port);
+        }
+        response.send();
     }
 
     @Override
