@@ -22,7 +22,13 @@ public class FileDeleteRequest implements Action {
 
     @Override
     public void execute() {
+        String message = "";
+        Boolean status = true;
 
+        // TODO: Execute action
+
+        Action response = new FileDeleteResponse(socket, fileDescriptor, pathName, message, status);
+        response.send();
     }
 
     @Override

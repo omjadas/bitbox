@@ -22,7 +22,13 @@ public class FileModifyRequest implements Action {
 
     @Override
     public void execute() {
+        String message = "";
+        Boolean status = true;
 
+        // TODO: Execute action
+
+        Action response = new FileModifyResponse(socket, fileDescriptor, pathName, message, status);
+        response.send();
     }
 
     @Override

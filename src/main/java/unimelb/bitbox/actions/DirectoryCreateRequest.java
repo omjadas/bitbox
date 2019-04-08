@@ -19,7 +19,13 @@ public class DirectoryCreateRequest implements Action {
 
     @Override
     public void execute() {
+        String message = "";
+        Boolean status = true;
 
+        // TODO: Execute action
+
+        Action response = new DirectoryCreateResponse(socket, pathName, message, status);
+        response.send();
     }
 
     @Override
