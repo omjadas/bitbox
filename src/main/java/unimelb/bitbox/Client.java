@@ -7,11 +7,14 @@ import java.util.ArrayList;
 public class Client {
     public static ArrayList<Client> establishedClients;
     private Socket clientSocket;
+    private String host;
+    private int port;
 
-    public Client(String address, int port) {
+    public Client(String host, int port) {
+        this.host = host;
+        this.port = port;
         try {
-            this.clientSocket = new Socket(address, port);
-
+            this.clientSocket = new Socket(host, port);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -21,11 +24,12 @@ public class Client {
 
     }
 
-    public void initiateHandshake() {
-
+    public String getHost() {
+        return host;
     }
 
-    public void respondToHandshake() {
-
+    public int getPort() {
+        return port;
     }
+
 }
