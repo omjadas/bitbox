@@ -15,19 +15,19 @@ public class Peer extends Thread {
         System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$tc] %2$s %4$s: %5$s%n");
         log.info("BitBox Peer starting...");
         Configuration.getConfiguration();
-        
+
         Peer peer = new Peer();
         peer.start();
         new ServerMain();
         new ClientSearcher();
     }
-    
+
     public void run() {
         try {
             serverSocket = new ServerSocket(Integer.parseInt(Configuration.getConfigurationValue("port")));
 
             while (true) {
-            	System.out.println("does this get called again");
+                System.out.println("does this get called again");
                 new Client(serverSocket.accept());
             }
         } catch (IOException e) {
