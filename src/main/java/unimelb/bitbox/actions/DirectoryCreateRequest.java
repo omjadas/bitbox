@@ -17,6 +17,11 @@ public class DirectoryCreateRequest implements Action {
         this.pathName = pathName;
     }
 
+    public DirectoryCreateRequest(Socket socket, Document message) {
+        this.socket = socket;
+        this.pathName = message.getString("pathName");
+    }
+
     @Override
     public void execute() {
         String message = "";

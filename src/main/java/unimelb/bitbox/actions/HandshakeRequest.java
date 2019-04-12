@@ -19,6 +19,16 @@ public class HandshakeRequest implements Action {
         this.port = port;
     }
 
+    public HandshakeRequest(Socket socket, Document message) {
+        this.socket = socket;
+
+        String clientHost = ((Document) message.get("hostPort")).getString("host");
+        int clientPort = ((Document) message.get("hostPort")).getInteger("port");
+
+        this.host = clientHost;
+        this.port = clientPort;
+    }
+
     @Override
     public void execute() {
         Boolean refused = true;

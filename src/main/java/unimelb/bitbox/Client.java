@@ -6,7 +6,25 @@ import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.ArrayList;
 
+import unimelb.bitbox.actions.Action;
+import unimelb.bitbox.actions.ConnectionRefused;
+import unimelb.bitbox.actions.DirectoryCreateRequest;
+import unimelb.bitbox.actions.DirectoryCreateResponse;
+import unimelb.bitbox.actions.DirectoryDeleteRequest;
+import unimelb.bitbox.actions.DirectoryDeleteResponse;
+import unimelb.bitbox.actions.FileBytesRequest;
+import unimelb.bitbox.actions.FileBytesResponse;
+import unimelb.bitbox.actions.FileCreateRequest;
+import unimelb.bitbox.actions.FileCreateResponse;
+import unimelb.bitbox.actions.FileDeleteRequest;
+import unimelb.bitbox.actions.FileDeleteResponse;
+import unimelb.bitbox.actions.FileModifyRequest;
+import unimelb.bitbox.actions.FileModifyResponse;
 import unimelb.bitbox.actions.HandshakeRequest;
+import unimelb.bitbox.actions.HandshakeResponse;
+import unimelb.bitbox.actions.InvalidProtocol;
+import unimelb.bitbox.util.Document;
+import unimelb.bitbox.FileDescriptor;
 
 public class Client extends Thread {
     public static ArrayList<Client> establishedClients = new ArrayList<Client>();
@@ -59,6 +77,48 @@ public class Client extends Thread {
             while ((inputLine = in.readLine()) != null) {
                 System.out.println(inputLine);
             }
+
+            Document message = Document.parse(inputLine);
+
+            Action action = null;
+            String command = message.getString("command");
+
+            if (command == "INVALID_PROTOCOL") {
+                action = new InvalidProtocol(clientSocket, message);
+            } else if (command == "CONNECTION_REFUSED") {
+                action = new ConnectionRefused(clientSocket, message);
+            } else if (command == "HANDSHAKE_REQUEST") {
+                action = new HandshakeRequest(clientSocket, message);
+            } else if (command == "HANDSHAKE_RESPONSE") {
+                action = new HandshakeResponse(clientSocket, message);
+            } else if (command == "FILE_CREATE_REQUEST") {
+                action = new FileCreateRequest(clientSocket, message);
+            } else if (command == "FILE_CREATE_RESPONSE") {
+                action = new FileCreateResponse(clientSocket, message);
+            } else if (command == "FILE_DELETE_REQUEST") {
+                action = new FileDeleteRequest(clientSocket, message);
+            } else if (command == "FILE_DELETE_RESPONSE") {
+                action = new FileDeleteResponse(clientSocket, message);
+            } else if (command == "FILE_MODIFY_REQUEST") {
+                action = new FileModifyRequest(clientSocket, message);
+            } else if (command == "FILE_MODIFY_RESPONSE") {
+                action = new FileModifyResponse(clientSocket, message);
+            } else if (command == "DIRECTORY_CREATE_REQUEST") {
+                action = new DirectoryCreateRequest(clientSocket, message);
+            } else if (command == "DIRECTORY_CREATE_RESPONSE") {
+                action = new DirectoryCreateResponse(clientSocket, message);
+            } else if (command == "DIRECTORY_DELETE_REQUEST") {
+                action = new DirectoryDeleteRequest(clientSocket, message);
+            } else if (command == "DIRECTORY_DELETE_RESPONSE") {
+                action = new DirectoryDeleteResponse(clientSocket, message);
+            } else if (command == "FILE_BYTES_REQUEST") {
+                action = new FileBytesRequest(clientSocket, message);
+            } else if (command == "FILE_BYTES_RESPONSE") {
+                action = new FileBytesResponse(clientSocket, message);
+            }
+
+            action.execute();
+
         } catch (IOException e) {
             e.printStackTrace();
         }

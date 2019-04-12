@@ -19,6 +19,11 @@ public class ConnectionRefused implements Action {
         this.message = message;
     }
 
+    public ConnectionRefused(Socket socket, Document message) {
+        this.socket = socket;
+        this.message = message.getString("message");
+    }
+
     @Override
     public void execute() {
 
