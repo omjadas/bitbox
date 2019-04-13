@@ -55,6 +55,7 @@ public class HandshakeRequest implements Action {
         try {
             BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF8"));
             out.write(toJSON());
+            out.newLine();
             out.flush();
         } catch (IOException e) {
             e.printStackTrace();
