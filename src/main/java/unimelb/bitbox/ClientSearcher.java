@@ -14,7 +14,12 @@ public class ClientSearcher extends Thread {
 
         String[] clients = clientList.split(",");
 
+        if (clients[0] == clientList) {
+            return;
+        }
+
         for (String client : clients) {
+            System.out.println("here");
             String[] clientDetails = client.split(":");
 
             HostPort clientHostPort = new HostPort(clientDetails[0], Integer.parseInt(clientDetails[1]));
