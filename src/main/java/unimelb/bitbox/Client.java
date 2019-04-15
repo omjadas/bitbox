@@ -48,7 +48,6 @@ public class Client extends Thread {
     }
 
     public Client(Socket socket) {
-        System.out.println("received");
         this.clientSocket = socket;
         this.start();
     }
