@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import unimelb.bitbox.util.Document;
-import unimelb.bitbox.util.FileSystemManager.FileDescriptor;
+import unimelb.bitbox.FileDescriptor;
 
 public class FileModifyRequest implements Action {
 
@@ -18,6 +18,12 @@ public class FileModifyRequest implements Action {
         this.socket = socket;
         this.fileDescriptor = fileDescriptor;
         this.pathName = pathName;
+    }
+
+    public FileModifyRequest(Socket socket, Document message) {
+        this.socket = socket;
+        this.fileDescriptor = new FileDescriptor(message);
+        this.pathName = message.getString("pathName");
     }
 
     @Override

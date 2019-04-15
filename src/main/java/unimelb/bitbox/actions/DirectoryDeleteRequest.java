@@ -17,6 +17,11 @@ public class DirectoryDeleteRequest implements Action {
         this.pathName = pathName;
     }
 
+    public DirectoryDeleteRequest(Socket socket, Document message) {
+        this.socket = socket;
+        this.pathName = message.getString("pathName");
+    }
+
     @Override
     public void execute() {
         String message = "";

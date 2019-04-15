@@ -11,28 +11,31 @@ public class HandshakeRequest implements Action {
     private Socket socket;
     private static final String command = "HANDSHAKE_REQUEST";
     private String host;
-    private int port;
+    private long port;
 
-    public HandshakeRequest(Socket socket, String host, int port) {
+    public HandshakeRequest(Socket socket, String host, long port) {
         this.socket = socket;
         this.host = host;
         this.port = port;
     }
 
+    public HandshakeRequest(Socket socket, Document message) {
+        this.socket = socket;
+
+        String clientHost = ((Document) message.get("hostPort")).getString("host");
+        long clientPort = ((Document) message.get("hostPort")).getLong("port");
+
+        this.host = clientHost;
+        this.port = clientPort;
+    }
+
     @Override
     public void execute() {
-        Boolean refused = true;
-        String message = "";
         Action response;
-
-        // TODO: Execute action
-
-        if (refused) {
-            response = new ConnectionRefused(socket, message);
-        } else {
-            response = new HandshakeResponse(socket, host, port);
-        }
+        response = new HandshakeResponse(socket, host, port);
         response.send();
+
+        System.out.println("response sent");
     }
 
     @Override

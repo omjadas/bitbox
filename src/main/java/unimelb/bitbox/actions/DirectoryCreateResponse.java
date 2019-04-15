@@ -21,6 +21,13 @@ public class DirectoryCreateResponse implements Action {
         this.status = status;
     }
 
+    public DirectoryCreateResponse(Socket socket, Document message) {
+        this.socket = socket;
+        this.pathName = message.getString("pathName");
+        this.message = message.getString("message");
+        this.status = message.getBoolean("status");
+    }
+
     @Override
     public void execute() {
 

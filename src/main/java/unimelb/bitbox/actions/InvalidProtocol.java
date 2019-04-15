@@ -17,7 +17,12 @@ public class InvalidProtocol implements Action {
         this.message = message;
     }
 
-    @Override
+    public InvalidProtocol(Socket socket, Document message) {
+        this.socket = socket;
+        this.message = message.getString("message");
+	}
+
+	@Override
     public void execute() {
 
     }
