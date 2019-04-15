@@ -27,7 +27,6 @@ public class Peer extends Thread {
             serverSocket = new ServerSocket(Integer.parseInt(Configuration.getConfigurationValue("port")));
 
             while (true) {
-                System.out.println("does this get called again");
                 new Client(serverSocket.accept());
             }
         } catch (IOException e) {

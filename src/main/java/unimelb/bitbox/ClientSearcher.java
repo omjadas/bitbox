@@ -1,5 +1,6 @@
 package unimelb.bitbox;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -12,14 +13,13 @@ public class ClientSearcher extends Thread {
     public ClientSearcher() {
         String clientList = Configuration.getConfigurationValue("peers");
 
-        String[] clients = clientList.split(",");
-
-        if (clients[0] == clientList) {
+        if (clientList.equals("")) {
             return;
         }
 
+        String[] clients = clientList.split(",");
+
         for (String client : clients) {
-            System.out.println("here");
             String[] clientDetails = client.split(":");
 
             HostPort clientHostPort = new HostPort(clientDetails[0], Integer.parseInt(clientDetails[1]));
