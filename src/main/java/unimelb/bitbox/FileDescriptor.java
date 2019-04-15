@@ -19,8 +19,8 @@ public class FileDescriptor {
     /**
      * Constructor
      * 
-     * @param lastModified the timestamp for when file was last modified
-     * @param md5          the current MD5 hash of the file's content.
+     * @param lastModified The timestamp for when file was last modified
+     * @param md5 The current MD5 hash of the file's content.
      */
     public FileDescriptor(long lastModified, String md5, long fileSize) {
         this.lastModified = lastModified;
@@ -31,7 +31,7 @@ public class FileDescriptor {
     /**
      * Constructor
      * 
-     * @param message the document containing the fileDescriptor
+     * @param message The document containing the fileDescriptor
      */
     public FileDescriptor(Document message) {
         this.lastModified = ((Document) message.get("fileDescriptor")).getLong("lastModified");
@@ -40,7 +40,7 @@ public class FileDescriptor {
     }
 
     /**
-     * Provide the {@link #Document} for this object.
+     * Provide the Document for this object.
      */
     public Document toDoc() {
         Document doc = new Document();
