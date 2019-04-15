@@ -11,9 +11,9 @@ public class HandshakeResponse implements Action {
     private Socket socket;
     private static final String command = "HANDSHAKE_RESPONSE";
     private String host;
-    private int port;
+    private long port;
 
-    public HandshakeResponse(Socket socket, String host, int port) {
+    public HandshakeResponse(Socket socket, String host, long port) {
         this.socket = socket;
         this.host = host;
         this.port = port;
@@ -23,7 +23,7 @@ public class HandshakeResponse implements Action {
         this.socket = socket;
 
         String clientHost = ((Document) message.get("hostPort")).getString("host");
-        int clientPort = ((Document) message.get("hostPort")).getInteger("port");
+        long clientPort = ((Document) message.get("hostPort")).getLong("port");
 
         this.host = clientHost;
         this.port = clientPort;
@@ -31,7 +31,7 @@ public class HandshakeResponse implements Action {
 
     @Override
     public void execute() {
-
+        System.out.println("response received");
     }
 
     @Override

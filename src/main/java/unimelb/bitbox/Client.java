@@ -54,6 +54,7 @@ public class Client extends Thread {
             return;
         }
         establishedClients.add(this);
+
         this.start();
     }
 
@@ -69,13 +70,15 @@ public class Client extends Thread {
         return port;
     }
 
-    private void validateRequest() {
-
+    private boolean validateRequest(Document message) {
+        return true;
     }
 
     private Action getAction(Document message) {
         Action action = null;
         String command = message.getString("command");
+
+        System.out.println(command);
 
         if (command.equals("INVALID_PROTOCOL")) {
             action = new InvalidProtocol(clientSocket, message);
@@ -121,13 +124,14 @@ public class Client extends Thread {
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
                 System.out.println(inputLine);
+
+                Document message = Document.parse(inputLine);
+
+                if (validateRequest(message)) {
+                    Action action = getAction(message);
+                    action.execute();
+                }
             }
-
-            Document message = Document.parse(inputLine);
-
-            Action action = getAction(message);
-
-            action.execute();
 
         } catch (IOException e) {
             e.printStackTrace();
