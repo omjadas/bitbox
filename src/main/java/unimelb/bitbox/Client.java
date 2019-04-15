@@ -69,6 +69,47 @@ public class Client extends Thread {
 
     }
 
+    private Action getAction(Document message) {
+        Action action = null;
+        String command = message.getString("command");
+
+        if (command.equals("INVALID_PROTOCOL")) {
+            action = new InvalidProtocol(clientSocket, message);
+        } else if (command.equals("CONNECTION_REFUSED")) {
+            action = new ConnectionRefused(clientSocket, message);
+        } else if (command.equals("HANDSHAKE_REQUEST")) {
+            action = new HandshakeRequest(clientSocket, message);
+        } else if (command.equals("HANDSHAKE_RESPONSE")) {
+            action = new HandshakeResponse(clientSocket, message);
+        } else if (command.equals("FILE_CREATE_REQUEST")) {
+            action = new FileCreateRequest(clientSocket, message);
+        } else if (command.equals("FILE_CREATE_RESPONSE")) {
+            action = new FileCreateResponse(clientSocket, message);
+        } else if (command.equals("FILE_DELETE_REQUEST")) {
+            action = new FileDeleteRequest(clientSocket, message);
+        } else if (command.equals("FILE_DELETE_RESPONSE")) {
+            action = new FileDeleteResponse(clientSocket, message);
+        } else if (command.equals("FILE_MODIFY_REQUEST")) {
+            action = new FileModifyRequest(clientSocket, message);
+        } else if (command.equals("FILE_MODIFY_RESPONSE")) {
+            action = new FileModifyResponse(clientSocket, message);
+        } else if (command.equals("DIRECTORY_CREATE_REQUEST")) {
+            action = new DirectoryCreateRequest(clientSocket, message);
+        } else if (command.equals("DIRECTORY_CREATE_RESPONSE")) {
+            action = new DirectoryCreateResponse(clientSocket, message);
+        } else if (command.equals("DIRECTORY_DELETE_REQUEST")) {
+            action = new DirectoryDeleteRequest(clientSocket, message);
+        } else if (command.equals("DIRECTORY_DELETE_RESPONSE")) {
+            action = new DirectoryDeleteResponse(clientSocket, message);
+        } else if (command.equals("FILE_BYTES_REQUEST")) {
+            action = new FileBytesRequest(clientSocket, message);
+        } else if (command.equals("FILE_BYTES_RESPONSE")) {
+            action = new FileBytesResponse(clientSocket, message);
+        }
+
+        return action;
+    }
+
     public void run() {
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(this.clientSocket.getInputStream(), "UTF-8"));
@@ -80,42 +121,7 @@ public class Client extends Thread {
 
             Document message = Document.parse(inputLine);
 
-            Action action = null;
-            String command = message.getString("command");
-
-            if (command.equals("INVALID_PROTOCOL")) {
-                action = new InvalidProtocol(clientSocket, message);
-            } else if (command.equals("CONNECTION_REFUSED")) {
-                action = new ConnectionRefused(clientSocket, message);
-            } else if (command.equals("HANDSHAKE_REQUEST")) {
-                action = new HandshakeRequest(clientSocket, message);
-            } else if (command.equals("HANDSHAKE_RESPONSE")) {
-                action = new HandshakeResponse(clientSocket, message);
-            } else if (command.equals("FILE_CREATE_REQUEST")) {
-                action = new FileCreateRequest(clientSocket, message);
-            } else if (command.equals("FILE_CREATE_RESPONSE")) {
-                action = new FileCreateResponse(clientSocket, message);
-            } else if (command.equals("FILE_DELETE_REQUEST")) {
-                action = new FileDeleteRequest(clientSocket, message);
-            } else if (command.equals("FILE_DELETE_RESPONSE")) {
-                action = new FileDeleteResponse(clientSocket, message);
-            } else if (command.equals("FILE_MODIFY_REQUEST")) {
-                action = new FileModifyRequest(clientSocket, message);
-            } else if (command.equals("FILE_MODIFY_RESPONSE")) {
-                action = new FileModifyResponse(clientSocket, message);
-            } else if (command.equals("DIRECTORY_CREATE_REQUEST")) {
-                action = new DirectoryCreateRequest(clientSocket, message);
-            } else if (command.equals("DIRECTORY_CREATE_RESPONSE")) {
-                action = new DirectoryCreateResponse(clientSocket, message);
-            } else if (command.equals("DIRECTORY_DELETE_REQUEST")) {
-                action = new DirectoryDeleteRequest(clientSocket, message);
-            } else if (command.equals("DIRECTORY_DELETE_RESPONSE")) {
-                action = new DirectoryDeleteResponse(clientSocket, message);
-            } else if (command.equals("FILE_BYTES_REQUEST")) {
-                action = new FileBytesRequest(clientSocket, message);
-            } else if (command.equals("FILE_BYTES_RESPONSE")) {
-                action = new FileBytesResponse(clientSocket, message);
-            }
+            Action action = getAction(message);
 
             action.execute();
 
