@@ -28,6 +28,11 @@ public class FileDescriptor {
         this.fileSize = fileSize;
     }
 
+    /**
+     * Constructor
+     * 
+     * @param message the document containing the fileDescriptor
+     */
     public FileDescriptor(Document message) {
         this.lastModified = ((Document) message.get("fileDescriptor")).getLong("lastModified");
         this.md5 = ((Document) message.get("fileDescriptor")).getString("md5");
