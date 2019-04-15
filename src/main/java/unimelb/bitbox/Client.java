@@ -49,6 +49,11 @@ public class Client extends Thread {
 
     public Client(Socket socket) {
         this.clientSocket = socket;
+        if (establishedClients.size() == Peer.maximumIncommingConnections) {
+            new ConnectionRefused(socket, "connection limit reached").send();
+            return;
+        }
+        establishedClients.add(this);
         this.start();
     }
 
