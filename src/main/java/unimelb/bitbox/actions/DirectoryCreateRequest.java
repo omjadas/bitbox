@@ -21,6 +21,12 @@ public class DirectoryCreateRequest implements Action {
         this.socket = socket;
         this.pathName = message.getString("pathName");
     }
+    
+    public DirectoryCreateRequest(Socket socket, String pathName, FileSystemManager fileSystemManager) {
+        this.socket = socket;
+        this.pathName = pathName;
+        this.fileSystemManager = fileSystemManager;
+    }
 
     @Override
     public void execute() {
@@ -28,10 +34,23 @@ public class DirectoryCreateRequest implements Action {
         Boolean status = true;
 
         // TODO: Execute action
-
-        Action response = new DirectoryCreateResponse(socket, pathName, message, status);
-        response.send();
-    }
+        
+        status = fileSystemManager.makeDirectory(pathName);
+        
+        if (status) {
+            message = "directory created";
+        } else {
+            Boolean isSafePath = fileSystemManager.isSafePathName(pathName);
+            Boolean dirNameExists = fileSystemManager.dirNameExists(pathName);
+            
+            if (!isSafePath) {
+                message = "unsafe pathname given";
+            } else if (dirNameExists) {
+                message = "pathname already exists";
+            } else {
+                message = "there was problem creating the directory";
+            }
+        }
 
     @Override
     public int compare(Action action) {
