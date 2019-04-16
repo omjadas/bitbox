@@ -21,6 +21,12 @@ public class DirectoryDeleteRequest implements Action {
         this.socket = socket;
         this.pathName = message.getString("pathName");
     }
+    
+    public DirectoryDeleteRequest(Socket socket, String pathName, FileSystemManager fileSystemManager) {
+        this.socket = socket;
+        this.pathName = pathName;
+        this.fileSystemManager = fileSystemManager;
+    }
 
     @Override
     public void execute() {
@@ -28,6 +34,24 @@ public class DirectoryDeleteRequest implements Action {
         Boolean status = true;
 
         // TODO: Execute action
+        
+        status = fileSystemManager.deleteDirectory(pathName);
+        
+        if (status) {
+            message = "directory deleted";
+        } else {
+            Boolean isSafePath = fileSystemManager.isSafePathName(pathName);
+            Boolean dirNameExist = fileSystemManager.dirNameExists(pathName);
+            
+            if (!isSafePath) {
+                message = "unsafe pathname given";
+            } else if (!dirNameExist) {
+                message = "pathname does not exist";
+            } else {
+                message = "there was problem deleting directory";
+            }
+            
+        }
 
         Action response = new DirectoryDeleteResponse(socket, pathName, message, status);
         response.send();
