@@ -24,6 +24,7 @@ import unimelb.bitbox.actions.HandshakeRequest;
 import unimelb.bitbox.actions.HandshakeResponse;
 import unimelb.bitbox.actions.InvalidProtocol;
 import unimelb.bitbox.util.Document;
+import unimelb.bitbox.util.FileSystemManager;
 import unimelb.bitbox.FileDescriptor;
 
 public class Client extends Thread {
@@ -31,12 +32,14 @@ public class Client extends Thread {
     private Socket clientSocket;
     private String host;
     private int port;
+    private FileSystemManager fileSystemManager;
 
     private boolean establishedConnection = false;
 
-    public Client(String host, int port) {
+    public Client(String host, int port, FileSystemManager fileSystemManager) {
         this.host = host;
         this.port = port;
+        this.fileSystemManager = fileSystemManager;
         try {
             this.clientSocket = new Socket(host, port);
             HandshakeRequest requestAction = new HandshakeRequest(this.clientSocket, host, port);
@@ -47,8 +50,9 @@ public class Client extends Thread {
         }
     }
 
-    public Client(Socket socket) {
+    public Client(Socket socket, FileSystemManager fileSystemManager) {
         this.clientSocket = socket;
+        this.fileSystemManager = fileSystemManager;
         if (establishedClients.size() == Peer.maximumIncommingConnections) {
             new ConnectionRefused(socket, "connection limit reached").send();
             return;
@@ -129,7 +133,7 @@ public class Client extends Thread {
 
                 if (validateRequest(message)) {
                     Action action = getAction(message);
-                    action.execute();
+                    action.execute(fileSystemManager);
                 }
             }
 

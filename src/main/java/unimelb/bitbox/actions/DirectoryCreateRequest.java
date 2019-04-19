@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import unimelb.bitbox.util.Document;
+import unimelb.bitbox.util.FileSystemManager;
 
 public class DirectoryCreateRequest implements Action {
 
@@ -21,28 +22,22 @@ public class DirectoryCreateRequest implements Action {
         this.socket = socket;
         this.pathName = message.getString("pathName");
     }
-    
-    public DirectoryCreateRequest(Socket socket, String pathName, FileSystemManager fileSystemManager) {
-        this.socket = socket;
-        this.pathName = pathName;
-        this.fileSystemManager = fileSystemManager;
-    }
 
     @Override
-    public void execute() {
+    public void execute(FileSystemManager fileSystemManager) {
         String message = "";
         Boolean status = true;
 
         // TODO: Execute action
-        
+
         status = fileSystemManager.makeDirectory(pathName);
-        
+
         if (status) {
             message = "directory created";
         } else {
             Boolean isSafePath = fileSystemManager.isSafePathName(pathName);
             Boolean dirNameExists = fileSystemManager.dirNameExists(pathName);
-            
+
             if (!isSafePath) {
                 message = "unsafe pathname given";
             } else if (dirNameExists) {
@@ -51,6 +46,7 @@ public class DirectoryCreateRequest implements Action {
                 message = "there was problem creating the directory";
             }
         }
+    }
 
     @Override
     public int compare(Action action) {

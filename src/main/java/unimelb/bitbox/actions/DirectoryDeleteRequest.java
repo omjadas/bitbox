@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import unimelb.bitbox.util.Document;
+import unimelb.bitbox.util.FileSystemManager;
 
 public class DirectoryDeleteRequest implements Action {
 
@@ -21,28 +22,22 @@ public class DirectoryDeleteRequest implements Action {
         this.socket = socket;
         this.pathName = message.getString("pathName");
     }
-    
-    public DirectoryDeleteRequest(Socket socket, String pathName, FileSystemManager fileSystemManager) {
-        this.socket = socket;
-        this.pathName = pathName;
-        this.fileSystemManager = fileSystemManager;
-    }
 
     @Override
-    public void execute() {
+    public void execute(FileSystemManager fileSystemManager) {
         String message = "";
         Boolean status = true;
 
         // TODO: Execute action
-        
+
         status = fileSystemManager.deleteDirectory(pathName);
-        
+
         if (status) {
             message = "directory deleted";
         } else {
             Boolean isSafePath = fileSystemManager.isSafePathName(pathName);
             Boolean dirNameExist = fileSystemManager.dirNameExists(pathName);
-            
+
             if (!isSafePath) {
                 message = "unsafe pathname given";
             } else if (!dirNameExist) {
@@ -50,7 +45,7 @@ public class DirectoryDeleteRequest implements Action {
             } else {
                 message = "there was problem deleting directory";
             }
-            
+
         }
 
         Action response = new DirectoryDeleteResponse(socket, pathName, message, status);

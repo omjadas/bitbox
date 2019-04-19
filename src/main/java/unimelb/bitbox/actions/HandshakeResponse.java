@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import unimelb.bitbox.util.Document;
+import unimelb.bitbox.util.FileSystemManager;
 
 public class HandshakeResponse implements Action {
 
@@ -30,7 +31,7 @@ public class HandshakeResponse implements Action {
     }
 
     @Override
-    public void execute() {
+    public void execute(FileSystemManager fileSystemManager) {
         System.out.println("response received");
     }
 

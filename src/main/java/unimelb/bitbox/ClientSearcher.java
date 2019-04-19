@@ -40,7 +40,7 @@ public class ClientSearcher extends Thread {
             }
 
             HostPort potentialClient = potentialClients.remove();
-            new Client(potentialClient.host, potentialClient.port);
+            new Client(potentialClient.host, potentialClient.port, ServerMain.fileSystemManager);
         }
     }
 }

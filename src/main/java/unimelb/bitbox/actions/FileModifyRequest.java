@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import unimelb.bitbox.util.Document;
+import unimelb.bitbox.util.FileSystemManager;
 import unimelb.bitbox.FileDescriptor;
 
 public class FileModifyRequest implements Action {
@@ -27,7 +28,7 @@ public class FileModifyRequest implements Action {
     }
 
     @Override
-    public void execute() {
+    public void execute(FileSystemManager fileSystemManager) {
         String message = "";
         Boolean status = true;
 

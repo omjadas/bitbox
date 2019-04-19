@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import unimelb.bitbox.util.Document;
+import unimelb.bitbox.util.FileSystemManager;
 import unimelb.bitbox.FileDescriptor;
 
 public class FileDeleteResponse implements Action {
@@ -34,7 +35,7 @@ public class FileDeleteResponse implements Action {
     }
 
     @Override
-    public void execute() {
+    public void execute(FileSystemManager fileSystemManger) {
 
     }
 
