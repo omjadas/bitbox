@@ -32,7 +32,6 @@ public class HandshakeResponse implements Action {
 
     @Override
     public void execute(FileSystemManager fileSystemManager) {
-        System.out.println("response received");
     }
 
     @Override
