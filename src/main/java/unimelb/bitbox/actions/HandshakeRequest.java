@@ -34,8 +34,6 @@ public class HandshakeRequest implements Action {
         Action response;
         response = new HandshakeResponse(socket, host, port);
         response.send();
-
-        System.out.println("response sent");
     }
 
     @Override

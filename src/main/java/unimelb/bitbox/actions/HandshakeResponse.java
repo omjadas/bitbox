@@ -31,7 +31,6 @@ public class HandshakeResponse implements Action {
 
     @Override
     public void execute() {
-        System.out.println("response received");
     }
 
     @Override

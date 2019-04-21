@@ -24,6 +24,8 @@ import unimelb.bitbox.actions.HandshakeRequest;
 import unimelb.bitbox.actions.HandshakeResponse;
 import unimelb.bitbox.actions.InvalidProtocol;
 import unimelb.bitbox.util.Document;
+import unimelb.bitbox.util.FileSystemManager.EVENT;
+import unimelb.bitbox.util.FileSystemManager.FileSystemEvent;
 import unimelb.bitbox.FileDescriptor;
 
 public class Client extends Thread {
@@ -74,6 +76,27 @@ public class Client extends Thread {
         return true;
     }
 
+    public void processEvent(FileSystemEvent fileSystemEvent) {
+        Action action = null;
+
+        if (fileSystemEvent.event == EVENT.FILE_CREATE) {
+            action = new FileCreateRequest(clientSocket, new FileDescriptor(fileSystemEvent.fileDescriptor),
+                    fileSystemEvent.pathName);
+        } else if (fileSystemEvent.event == EVENT.FILE_DELETE) {
+            action = new FileDeleteRequest(clientSocket, new FileDescriptor(fileSystemEvent.fileDescriptor),
+                    fileSystemEvent.pathName);
+        } else if (fileSystemEvent.event == EVENT.FILE_MODIFY) {
+            action = new FileModifyRequest(clientSocket, new FileDescriptor(fileSystemEvent.fileDescriptor),
+                    fileSystemEvent.pathName);
+        } else if (fileSystemEvent.event == EVENT.DIRECTORY_CREATE) {
+            action = new DirectoryCreateRequest(clientSocket, fileSystemEvent.pathName);
+        } else if (fileSystemEvent.event == EVENT.DIRECTORY_DELETE) {
+            action = new DirectoryDeleteRequest(clientSocket, fileSystemEvent.pathName);
+        }
+
+        action.send();
+    }
+
     private Action getAction(Document message) {
         Action action = null;
         String command = message.getString("command");
@@ -88,6 +111,7 @@ public class Client extends Thread {
             action = new HandshakeRequest(clientSocket, message);
         } else if (command.equals("HANDSHAKE_RESPONSE")) {
             action = new HandshakeResponse(clientSocket, message);
+            establishedClients.add(this);
         } else if (command.equals("FILE_CREATE_REQUEST")) {
             action = new FileCreateRequest(clientSocket, message);
         } else if (command.equals("FILE_CREATE_RESPONSE")) {
