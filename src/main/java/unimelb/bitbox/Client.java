@@ -25,7 +25,6 @@ import unimelb.bitbox.actions.HandshakeResponse;
 import unimelb.bitbox.actions.InvalidProtocol;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
-import unimelb.bitbox.FileDescriptor;
 
 public class Client extends Thread {
     public static ArrayList<Client> establishedClients = new ArrayList<Client>();
