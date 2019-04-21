@@ -28,24 +28,26 @@ public class DirectoryCreateRequest implements Action {
         String message = "";
         Boolean status = true;
 
-        // TODO: Execute action
+        Boolean isSafePath = fileSystemManager.isSafePathName(pathName);
 
-        status = fileSystemManager.makeDirectory(pathName);
-
-        if (status) {
-            message = "directory created";
+        if (!isSafePath) {
+            message = "unsafe pathname given";
         } else {
-            Boolean isSafePath = fileSystemManager.isSafePathName(pathName);
             Boolean dirNameExists = fileSystemManager.dirNameExists(pathName);
-
-            if (!isSafePath) {
-                message = "unsafe pathname given";
-            } else if (dirNameExists) {
+            if (dirNameExists) {
                 message = "pathname already exists";
             } else {
-                message = "there was problem creating the directory";
+                status = fileSystemManager.makeDirectory(pathName);
+                if (status) {
+                    message = "directory created";
+                } else {
+                    message = "there was a problem creating the directory";
+                }
             }
         }
+
+        Action response = new DirectoryCreateResponse(socket, pathName, message, status);
+        response.send();
     }
 
     @Override

@@ -28,24 +28,22 @@ public class DirectoryDeleteRequest implements Action {
         String message = "";
         Boolean status = true;
 
-        // TODO: Execute action
+        Boolean isSafePath = fileSystemManager.isSafePathName(pathName);
 
-        status = fileSystemManager.deleteDirectory(pathName);
-
-        if (status) {
-            message = "directory deleted";
+        if (!isSafePath) {
+            message = "unsafe pathname given";
         } else {
-            Boolean isSafePath = fileSystemManager.isSafePathName(pathName);
-            Boolean dirNameExist = fileSystemManager.dirNameExists(pathName);
-
-            if (!isSafePath) {
-                message = "unsafe pathname given";
-            } else if (!dirNameExist) {
+            Boolean dirNameExists = fileSystemManager.dirNameExists(pathName);
+            if (!dirNameExists) {
                 message = "pathname does not exist";
             } else {
-                message = "there was problem deleting directory";
+                status = fileSystemManager.deleteDirectory(pathName);
+                if (status) {
+                    message = "directory deleted";
+                } else {
+                    message = "there was problem deleting directory";
+                }
             }
-
         }
 
         Action response = new DirectoryDeleteResponse(socket, pathName, message, status);
