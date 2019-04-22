@@ -6,6 +6,7 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 
 import unimelb.bitbox.util.Document;
+import unimelb.bitbox.util.FileSystemManager;
 import unimelb.bitbox.FileDescriptor;
 
 public class FileBytesRequest implements Action {
@@ -34,10 +35,10 @@ public class FileBytesRequest implements Action {
     }
 
     @Override
-    public void execute() {
+    public void execute(FileSystemManager fileSystemManager) {
         String message = "";
         String content = "";
-        Boolean status = true;
+        Boolean status = false;
 
         // TODO: Execute action
 
