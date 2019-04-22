@@ -59,12 +59,13 @@ public class FileModifyRequest implements Action {
                 e.printStackTrace();
             }
         }
+        
         Action response = new FileModifyResponse(socket, fileDescriptor, pathName, message, status);
         response.send();
         
         if (status) {
             int length = Integer.parseInt(Configuration.getConfigurationValue("blockSize"));
-            // need to implement FileByteRequest
+
             Action bytes = new FileBytesRequest(socket, fileDescriptor, pathName, 0, length);
             bytes.send();
         }
