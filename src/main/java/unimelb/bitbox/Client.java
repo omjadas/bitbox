@@ -134,8 +134,6 @@ public class Client extends Thread {
         Action action = null;
         String command = message.getString("command");
 
-        System.out.println(command);
-
         if (command.equals("INVALID_PROTOCOL")) {
             action = new InvalidProtocol(socket, message);
         } else if (command.equals("CONNECTION_REFUSED")) {
