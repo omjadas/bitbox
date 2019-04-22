@@ -63,8 +63,10 @@ public class FileCreateRequest implements Action {
                     bytes.send();
                 }
             } catch (NumberFormatException | NoSuchAlgorithmException | IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                int blockSize = Integer.parseInt(Configuration.getConfigurationValue("blockSize"));
+                Action bytes = new FileBytesRequest(socket, fileDescriptor, pathName, 0,
+                        fileDescriptor.fileSize < blockSize ? fileDescriptor.fileSize : blockSize);
+                bytes.send();
             }
         }
     }
