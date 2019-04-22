@@ -109,23 +109,23 @@ public class Client extends Thread {
         Action action = null;
 
         if (fileSystemEvent.event == EVENT.FILE_CREATE) {
-            action = new FileCreateRequest(clientSocket, new FileDescriptor(fileSystemEvent.fileDescriptor),
+            action = new FileCreateRequest(socket, new FileDescriptor(fileSystemEvent.fileDescriptor),
                     fileSystemEvent.pathName);
         } else if (fileSystemEvent.event == EVENT.FILE_DELETE) {
-            action = new FileDeleteRequest(clientSocket, new FileDescriptor(fileSystemEvent.fileDescriptor),
+            action = new FileDeleteRequest(socket, new FileDescriptor(fileSystemEvent.fileDescriptor),
                     fileSystemEvent.pathName);
         } else if (fileSystemEvent.event == EVENT.FILE_MODIFY) {
-            action = new FileModifyRequest(clientSocket, new FileDescriptor(fileSystemEvent.fileDescriptor),
+            action = new FileModifyRequest(socket, new FileDescriptor(fileSystemEvent.fileDescriptor),
                     fileSystemEvent.pathName);
         } else if (fileSystemEvent.event == EVENT.DIRECTORY_CREATE) {
-            action = new DirectoryCreateRequest(clientSocket, fileSystemEvent.pathName);
+            action = new DirectoryCreateRequest(socket, fileSystemEvent.pathName);
         } else if (fileSystemEvent.event == EVENT.DIRECTORY_DELETE) {
-            action = new DirectoryDeleteRequest(clientSocket, fileSystemEvent.pathName);
+            action = new DirectoryDeleteRequest(socket, fileSystemEvent.pathName);
         }
 
         action.send();
     }
-
+    /**
      * Return an appropriate action for the received message
      * 
      * @param message The received message
