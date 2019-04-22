@@ -21,9 +21,9 @@ public class InvalidProtocol implements Action {
     public InvalidProtocol(Socket socket, Document message) {
         this.socket = socket;
         this.message = message.getString("message");
-	}
+    }
 
-	@Override
+    @Override
     public void execute(FileSystemManager fileSystemManager) {
 
     }

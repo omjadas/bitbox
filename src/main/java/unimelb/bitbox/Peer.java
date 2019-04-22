@@ -17,7 +17,8 @@ public class Peer extends Thread {
         log.info("BitBox Peer starting...");
         Configuration.getConfiguration();
 
-        maximumIncommingConnections = Integer.parseInt(Configuration.getConfigurationValue("maximumIncommingConnections"));
+        maximumIncommingConnections = Integer
+                .parseInt(Configuration.getConfigurationValue("maximumIncommingConnections"));
 
         Peer peer = new Peer();
         peer.start();
