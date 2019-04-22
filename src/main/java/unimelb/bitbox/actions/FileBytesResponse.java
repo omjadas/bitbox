@@ -4,6 +4,10 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
+
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
 import unimelb.bitbox.FileDescriptor;
@@ -45,7 +49,17 @@ public class FileBytesResponse implements Action {
 
     @Override
     public void execute(FileSystemManager fileSystemManager) {
-
+        try {
+            if (fileSystemManager.writeFile(pathName, ByteBuffer.wrap(Base64.getDecoder().decode(content)), position)) {
+                if (!fileSystemManager.checkWriteComplete(pathName)) {
+                    Action bytes = new FileBytesRequest(socket, fileDescriptor, pathName, position + length, length);
+                    bytes.send();
+                }
+            }
+        } catch (IOException | NoSuchAlgorithmException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     @Override

@@ -4,6 +4,9 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
@@ -40,7 +43,16 @@ public class FileBytesRequest implements Action {
         String content = "";
         Boolean status = false;
 
-        // TODO: Execute action
+        try {
+            ByteBuffer buf = fileSystemManager.readFile(fileDescriptor.md5, position, length);
+            byte[] bytes = new byte[buf.remaining()];
+            buf.get(bytes);
+            content = Base64.getEncoder().encodeToString(bytes);
+            status = true;
+            message = "successful read";
+        } catch (NoSuchAlgorithmException | IOException e) {
+            message = "unsuccessful read";
+        }
 
         Action response = new FileBytesResponse(socket, fileDescriptor, pathName, position, length, content, message,
                 status);
