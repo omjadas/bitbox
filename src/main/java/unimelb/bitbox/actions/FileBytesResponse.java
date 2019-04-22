@@ -19,12 +19,12 @@ public class FileBytesResponse implements Action {
     private FileDescriptor fileDescriptor;
     private String pathName;
     private long position;
-    private int length;
+    private long length;
     private String content;
     private String message;
     private Boolean status;
 
-    public FileBytesResponse(Socket socket, FileDescriptor fileDescriptor, String pathName, long position, int length,
+    public FileBytesResponse(Socket socket, FileDescriptor fileDescriptor, String pathName, long position, long length,
             String content, String message, Boolean status) {
         this.socket = socket;
         this.fileDescriptor = fileDescriptor;

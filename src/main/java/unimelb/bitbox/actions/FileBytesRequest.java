@@ -19,9 +19,9 @@ public class FileBytesRequest implements Action {
     private FileDescriptor fileDescriptor;
     private String pathName;
     private long position;
-    private int length;
+    private long length;
 
-    public FileBytesRequest(Socket socket, FileDescriptor fileDescriptor, String pathName, long position, int length) {
+    public FileBytesRequest(Socket socket, FileDescriptor fileDescriptor, String pathName, long position, long length) {
         this.socket = socket;
         this.fileDescriptor = fileDescriptor;
         this.pathName = pathName;
@@ -34,7 +34,7 @@ public class FileBytesRequest implements Action {
         this.fileDescriptor = new FileDescriptor(message);
         this.pathName = message.getString("pathName");
         this.position = message.getLong("position");
-        this.length = message.getInteger("length");
+        this.length = message.getLong("length");
     }
 
     @Override
