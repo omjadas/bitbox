@@ -37,7 +37,7 @@ public class FileModifyRequest implements Action {
         String message = "";
         Boolean status = false;
             
-        if(fileSystemManager.isSafePathName(pathName)) {
+        if(!fileSystemManager.isSafePathName(pathName)) {
             message = "unsafe pathname given";
         } else if(!fileSystemManager.fileNameExists(pathName)) {
             message = "pathname does not exist";
@@ -64,10 +64,17 @@ public class FileModifyRequest implements Action {
         response.send();
         
         if (status) {
-            int length = Integer.parseInt(Configuration.getConfigurationValue("blockSize"));
-
-            Action bytes = new FileBytesRequest(socket, fileDescriptor, pathName, 0, length);
-            bytes.send();
+        	try {
+				if(fileSystemManager.checkShortcut(pathName)) {
+				    int length = Integer.parseInt(Configuration.getConfigurationValue("blockSize"));
+	
+				    Action fileBytesRequest = new FileBytesRequest(socket, fileDescriptor, pathName, 0, length);
+				    fileBytesRequest.send();
+				}
+			} catch (NumberFormatException | NoSuchAlgorithmException | IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
         }
     }
 
