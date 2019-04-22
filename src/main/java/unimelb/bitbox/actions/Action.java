@@ -18,7 +18,7 @@ public interface Action {
     public int compare(Action action);
 
     /**
-     * Send the action to the client
+     * Send the action to the corresponding client
      */
     public void send();
 }
