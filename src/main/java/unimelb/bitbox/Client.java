@@ -77,7 +77,7 @@ public class Client extends Thread {
     }
 
     /**
-     * Process FileSystemEvents
+     * Create corresponding actions for each FileSystemEvent
      * 
      * @param fileSystemEvent The FileSystemEvent to process
      */
