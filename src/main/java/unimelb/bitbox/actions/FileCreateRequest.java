@@ -4,6 +4,9 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.security.NoSuchAlgorithmException;
+
+import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
 import unimelb.bitbox.FileDescriptor;
@@ -28,14 +31,34 @@ public class FileCreateRequest implements Action {
     }
 
     @Override
-    public void execute(FileSystemManager fileSystemManger) {
+    public void execute(FileSystemManager fileSystemManager) {
         String message = "";
         Boolean status = false;
 
-        // TODO: Execute action
+        if (!fileSystemManager.isSafePathName(pathName)) {
+            message = "unsafe pathname given";
+        } else if (fileSystemManager.fileNameExists(pathName)) {
+            message = "pathname already exists";
+        } else
+            try {
+                if (status = fileSystemManager.createFileLoader(pathName, fileDescriptor.md5, fileDescriptor.fileSize,
+                        fileDescriptor.lastModified)) {
+                    message = "file loader ready";
+                } else {
+                    message = "there was a problem creating the file";
+                }
+            } catch (NoSuchAlgorithmException | IOException e) {
+                message = "there was a problem creating the file";
+            }
 
         Action response = new FileCreateResponse(socket, fileDescriptor, pathName, message, status);
         response.send();
+
+        if (status) {
+            int length = Integer.parseInt(Configuration.getConfigurationValue("blockSize"));
+            Action bytes = new FileBytesRequest(socket, fileDescriptor, pathName, 0, length);
+            bytes.send();
+        }
     }
 
     @Override
