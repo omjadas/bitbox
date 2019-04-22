@@ -49,6 +49,8 @@ public class Client extends Thread {
 
     public Client(Socket socket) {
         this.clientSocket = socket;
+        this.host = socket.getInetAddress().toString();
+        this.port = socket.getPort();
         establishConnection();
         this.start();
     }
