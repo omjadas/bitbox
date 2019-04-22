@@ -39,6 +39,12 @@ public class FileDescriptor {
         this.fileSize = ((Document) message.get("fileDescriptor")).getLong("fileSize");
     }
 
+    public FileDescriptor(unimelb.bitbox.util.FileSystemManager.FileDescriptor fileDescriptor) {
+        this.lastModified = fileDescriptor.lastModified;
+        this.md5 = fileDescriptor.md5;
+        this.fileSize = fileDescriptor.fileSize;
+    }
+
     /**
      * Provide the Document for this object.
      */
