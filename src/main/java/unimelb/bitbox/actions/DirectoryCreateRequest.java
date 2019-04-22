@@ -26,13 +26,13 @@ public class DirectoryCreateRequest implements Action {
     @Override
     public void execute(FileSystemManager fileSystemManager) {
         String message = "";
-        Boolean status = true;
+        Boolean status = false;
 
         if (!fileSystemManager.isSafePathName(pathName)) {
             message = "unsafe pathname given";
         } else if (fileSystemManager.dirNameExists(pathName)) {
             message = "pathname already exists";
-        } else if (fileSystemManager.makeDirectory(pathName)) {
+        } else if (status = fileSystemManager.makeDirectory(pathName)) {
             message = "directory created";
         } else {
             message = "there was a problem creating the directory";
