@@ -4,6 +4,10 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
+
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
 import unimelb.bitbox.FileDescriptor;
@@ -14,13 +18,13 @@ public class FileBytesResponse implements Action {
     private static final String command = "FILE_BYTES_RESPONSE";
     private FileDescriptor fileDescriptor;
     private String pathName;
-    private int position;
-    private int length;
+    private long position;
+    private long length;
     private String content;
     private String message;
     private Boolean status;
 
-    public FileBytesResponse(Socket socket, FileDescriptor fileDescriptor, String pathName, int position, int length,
+    public FileBytesResponse(Socket socket, FileDescriptor fileDescriptor, String pathName, long position, long length,
             String content, String message, Boolean status) {
         this.socket = socket;
         this.fileDescriptor = fileDescriptor;
@@ -36,8 +40,8 @@ public class FileBytesResponse implements Action {
         this.socket = socket;
         this.fileDescriptor = new FileDescriptor(message);
         this.pathName = message.getString("pathName");
-        this.position = message.getInteger("position");
-        this.length = message.getInteger("lenght");
+        this.position = message.getLong("position");
+        this.length = message.getLong("length");
         this.content = message.getString("content");
         this.message = message.getString("message");
         this.status = message.getBoolean("status");
@@ -45,7 +49,20 @@ public class FileBytesResponse implements Action {
 
     @Override
     public void execute(FileSystemManager fileSystemManager) {
-
+        try {
+            if (fileSystemManager.writeFile(pathName, ByteBuffer.wrap(Base64.getDecoder().decode(content)), position)) {
+                if (!fileSystemManager.checkWriteComplete(pathName)) {
+                    Action bytes = new FileBytesRequest(socket, fileDescriptor, pathName, position + length,
+                            (fileDescriptor.fileSize - (position + length)) < length
+                                    ? (fileDescriptor.fileSize - (position + length))
+                                    : length);
+                    bytes.send();
+                }
+            }
+        } catch (IOException | NoSuchAlgorithmException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     @Override
