@@ -18,13 +18,13 @@ public class FileBytesResponse implements Action {
     private static final String command = "FILE_BYTES_RESPONSE";
     private FileDescriptor fileDescriptor;
     private String pathName;
-    private int position;
+    private long position;
     private int length;
     private String content;
     private String message;
     private Boolean status;
 
-    public FileBytesResponse(Socket socket, FileDescriptor fileDescriptor, String pathName, int position, int length,
+    public FileBytesResponse(Socket socket, FileDescriptor fileDescriptor, String pathName, long position, int length,
             String content, String message, Boolean status) {
         this.socket = socket;
         this.fileDescriptor = fileDescriptor;

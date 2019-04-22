@@ -18,10 +18,10 @@ public class FileBytesRequest implements Action {
     private static final String command = "FILE_BYTES_REQUEST";
     private FileDescriptor fileDescriptor;
     private String pathName;
-    private int position;
+    private long position;
     private int length;
 
-    public FileBytesRequest(Socket socket, FileDescriptor fileDescriptor, String pathName, int position, int length) {
+    public FileBytesRequest(Socket socket, FileDescriptor fileDescriptor, String pathName, long position, int length) {
         this.socket = socket;
         this.fileDescriptor = fileDescriptor;
         this.pathName = pathName;
@@ -33,7 +33,7 @@ public class FileBytesRequest implements Action {
         this.socket = socket;
         this.fileDescriptor = new FileDescriptor(message);
         this.pathName = message.getString("pathName");
-        this.position = message.getInteger("position");
+        this.position = message.getLong("position");
         this.length = message.getInteger("length");
     }
 
