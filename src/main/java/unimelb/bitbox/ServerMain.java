@@ -11,7 +11,7 @@ import unimelb.bitbox.util.FileSystemManager.FileSystemEvent;
 
 public class ServerMain implements FileSystemObserver {
     private static Logger log = Logger.getLogger(ServerMain.class.getName());
-    protected FileSystemManager fileSystemManager;
+    protected static FileSystemManager fileSystemManager;
 
     public ServerMain() throws NumberFormatException, IOException, NoSuchAlgorithmException {
         fileSystemManager = new FileSystemManager(Configuration.getConfigurationValue("path"), this);

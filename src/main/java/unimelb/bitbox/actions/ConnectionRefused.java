@@ -7,6 +7,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import unimelb.bitbox.Client;
 import unimelb.bitbox.util.Document;
+import unimelb.bitbox.util.FileSystemManager;
 
 public class ConnectionRefused implements Action {
 
@@ -25,7 +26,7 @@ public class ConnectionRefused implements Action {
     }
 
     @Override
-    public void execute() {
+    public void execute(FileSystemManager fileSystemManager) {
 
     }
 

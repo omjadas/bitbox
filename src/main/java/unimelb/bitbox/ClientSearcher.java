@@ -1,6 +1,5 @@
 package unimelb.bitbox;
 
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -40,7 +39,7 @@ public class ClientSearcher extends Thread {
             }
 
             HostPort potentialClient = potentialClients.remove();
-            new Client(potentialClient.host, potentialClient.port);
+            new Client(potentialClient.host, potentialClient.port, ServerMain.fileSystemManager);
         }
     }
 }

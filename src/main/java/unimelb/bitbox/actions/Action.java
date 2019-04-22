@@ -1,11 +1,13 @@
 package unimelb.bitbox.actions;
 
+import unimelb.bitbox.util.FileSystemManager;
+
 public interface Action {
 
     /**
      * Execute the action
      */
-    public void execute();
+    public void execute(FileSystemManager fileSystemManager);
 
     /**
      * Compare two actions
