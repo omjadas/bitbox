@@ -36,45 +36,43 @@ public class FileModifyRequest implements Action {
     public void execute(FileSystemManager fileSystemManager) {
         String message = "";
         Boolean status = false;
-            
-        if(!fileSystemManager.isSafePathName(pathName)) {
+
+        if (!fileSystemManager.isSafePathName(pathName)) {
             message = "unsafe pathname given";
-        } else if(!fileSystemManager.fileNameExists(pathName)) {
+        } else if (!fileSystemManager.fileNameExists(pathName)) {
             message = "pathname does not exist";
-        } else if(fileSystemManager.fileNameExists(pathName, fileDescriptor.md5)) {
+        } else if (fileSystemManager.fileNameExists(pathName, fileDescriptor.md5)) {
             message = "file already exists with matching content";
         } else {
             try {
-                 
-	            status = fileSystemManager.modifyFileLoader(pathName, fileDescriptor.md5, fileDescriptor.lastModified);
-	            // when trying to modify loading file or old file
-	            if(!status) {
-	                message = "there was a problem modifying the file";
-	            } else {
-	                message = "file loader ready";
-	            }
-            
+                if (status = fileSystemManager.modifyFileLoader(pathName, fileDescriptor.md5,
+                        fileDescriptor.lastModified)) {
+                    message = "file loader ready";
+                } else {
+                    message = "there was a problem modifying the file";
+                }
             } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                message = "there was a problem modifying the file";
             }
         }
-        
+
         Action response = new FileModifyResponse(socket, fileDescriptor, pathName, message, status);
         response.send();
-        
+
         if (status) {
-        	try {
-				if(fileSystemManager.checkShortcut(pathName)) {
-				    int length = Integer.parseInt(Configuration.getConfigurationValue("blockSize"));
-	
-				    Action fileBytesRequest = new FileBytesRequest(socket, fileDescriptor, pathName, 0, length);
-				    fileBytesRequest.send();
-				}
-			} catch (NumberFormatException | NoSuchAlgorithmException | IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} 
+            try {
+                if (!fileSystemManager.checkShortcut(pathName)) {
+                    int blockSize = Integer.parseInt(Configuration.getConfigurationValue("blockSize"));
+                    Action bytes = new FileBytesRequest(socket, fileDescriptor, pathName, 0,
+                            fileDescriptor.fileSize < blockSize ? fileDescriptor.fileSize : blockSize);
+                    bytes.send();
+                }
+            } catch (NumberFormatException | NoSuchAlgorithmException | IOException e) {
+                int blockSize = Integer.parseInt(Configuration.getConfigurationValue("blockSize"));
+                Action bytes = new FileBytesRequest(socket, fileDescriptor, pathName, 0,
+                        fileDescriptor.fileSize < blockSize ? fileDescriptor.fileSize : blockSize);
+                bytes.send();
+            }
         }
     }
 
