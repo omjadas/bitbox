@@ -35,7 +35,7 @@ public class FileDeleteResponse implements Action {
     }
 
     @Override
-    public void execute(FileSystemManager fileSystemManger) {
+    public void execute(FileSystemManager fileSystemManager) {
 
     }
 

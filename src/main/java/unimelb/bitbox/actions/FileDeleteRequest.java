@@ -28,11 +28,19 @@ public class FileDeleteRequest implements Action {
     }
 
     @Override
-    public void execute(FileSystemManager fileSystemManger) {
+    public void execute(FileSystemManager fileSystemManager) {
         String message = "";
         Boolean status = false;
 
-        // TODO: Execute action
+        if (!fileSystemManager.isSafePathName(pathName)) {
+            message = "unsafe pathname given";
+        } else if (!fileSystemManager.fileNameExists(pathName)) {
+            message = "pathname does not exist";
+        } else if (status = fileSystemManager.deleteFile(pathName, fileDescriptor.lastModified, fileDescriptor.md5)) {
+            message = "file deleted";
+        } else {
+            message = "there was a problem deleting the file";
+        }
 
         Action response = new FileDeleteResponse(socket, fileDescriptor, pathName, message, status);
         response.send();

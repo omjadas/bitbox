@@ -52,7 +52,6 @@ public class Client extends Thread {
         }
     }
 
-    
     public Client(Socket socket, FileSystemManager fileSystemManager) {
         this.socket = socket;
         this.fileSystemManager = fileSystemManager;
@@ -100,7 +99,6 @@ public class Client extends Thread {
     }
 
     /**
-
      * Create corresponding actions for each FileSystemEvent
      * 
      * @param fileSystemEvent The FileSystemEvent to process
@@ -125,6 +123,7 @@ public class Client extends Thread {
 
         action.send();
     }
+
     /**
      * Return an appropriate action for the received message
      * 

@@ -20,7 +20,7 @@ public class FileDescriptor {
      * Constructor
      * 
      * @param lastModified The timestamp for when file was last modified
-     * @param md5 The current MD5 hash of the file's content.
+     * @param md5          The current MD5 hash of the file's content.
      */
     public FileDescriptor(long lastModified, String md5, long fileSize) {
         this.lastModified = lastModified;
