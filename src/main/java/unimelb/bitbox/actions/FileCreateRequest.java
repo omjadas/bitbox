@@ -30,7 +30,7 @@ public class FileCreateRequest implements Action {
     @Override
     public void execute(FileSystemManager fileSystemManger) {
         String message = "";
-        Boolean status = true;
+        Boolean status = false;
 
         // TODO: Execute action
 

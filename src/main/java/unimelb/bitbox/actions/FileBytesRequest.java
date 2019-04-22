@@ -38,7 +38,7 @@ public class FileBytesRequest implements Action {
     public void execute(FileSystemManager fileSystemManager) {
         String message = "";
         String content = "";
-        Boolean status = true;
+        Boolean status = false;
 
         // TODO: Execute action
 
