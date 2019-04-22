@@ -51,32 +51,51 @@ public class Client extends Thread {
 
     public Client(Socket socket) {
         this.clientSocket = socket;
-        if (establishedClients.size() == Peer.maximumIncommingConnections) {
-            new ConnectionRefused(socket, "connection limit reached").send();
-            return;
-        }
-        establishedClients.add(this);
-
+        establishConnection();
         this.start();
     }
 
+    /**
+     * Establish a connection with the client
+     */
     public void establishConnection() {
-
+        if (establishedClients.size() == Peer.maximumIncommingConnections) {
+            new ConnectionRefused(clientSocket, "connection limit reached").send();
+            return;
+        }
+        establishedClients.add(this);
     }
 
+    /**
+     * Return the host of the client
+     * 
+     * @return The host of the client
+     */
     public String getHost() {
         return host;
     }
 
+    /**
+     * Return the port of the client
+     * 
+     * @return The port of the client
+     */
     public int getPort() {
         return port;
     }
 
+    /**
+     * Determine if the message is valid
+     * 
+     * @param message The received message
+     * @return Boolean indication whether the message is valid
+     */
     private boolean validateRequest(Document message) {
         return true;
     }
 
     /**
+
      * Create corresponding actions for each FileSystemEvent
      * 
      * @param fileSystemEvent The FileSystemEvent to process
@@ -102,6 +121,11 @@ public class Client extends Thread {
         action.send();
     }
 
+     * Return an appropriate action for the received message
+     * 
+     * @param message The received message
+     * @return An action corresponding to the revceived message
+     */
     private Action getAction(Document message) {
         Action action = null;
         String command = message.getString("command");
