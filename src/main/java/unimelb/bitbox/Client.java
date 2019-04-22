@@ -76,6 +76,11 @@ public class Client extends Thread {
         return true;
     }
 
+    /**
+     * Process FileSystemEvents
+     * 
+     * @param fileSystemEvent The FileSystemEvent to process
+     */
     public void processEvent(FileSystemEvent fileSystemEvent) {
         Action action = null;
 
