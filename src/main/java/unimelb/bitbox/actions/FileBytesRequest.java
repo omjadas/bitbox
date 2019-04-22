@@ -45,7 +45,7 @@ public class FileBytesRequest implements Action {
 
         try {
             ByteBuffer buf = fileSystemManager.readFile(fileDescriptor.md5, position, length);
-            byte[] bytes = new byte[buf.remaining()];
+            byte[] bytes = new byte[buf.rewind().remaining()];
             buf.get(bytes);
             content = Base64.getEncoder().encodeToString(bytes);
             status = true;

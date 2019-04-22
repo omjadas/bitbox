@@ -40,8 +40,8 @@ public class FileBytesResponse implements Action {
         this.socket = socket;
         this.fileDescriptor = new FileDescriptor(message);
         this.pathName = message.getString("pathName");
-        this.position = message.getInteger("position");
-        this.length = message.getInteger("lenght");
+        this.position = message.getLong("position");
+        this.length = message.getLong("length");
         this.content = message.getString("content");
         this.message = message.getString("message");
         this.status = message.getBoolean("status");
@@ -52,7 +52,10 @@ public class FileBytesResponse implements Action {
         try {
             if (fileSystemManager.writeFile(pathName, ByteBuffer.wrap(Base64.getDecoder().decode(content)), position)) {
                 if (!fileSystemManager.checkWriteComplete(pathName)) {
-                    Action bytes = new FileBytesRequest(socket, fileDescriptor, pathName, position + length, length);
+                    Action bytes = new FileBytesRequest(socket, fileDescriptor, pathName, position + length,
+                            (fileDescriptor.fileSize - (position + length)) < length
+                                    ? (fileDescriptor.fileSize - (position + length))
+                                    : length);
                     bytes.send();
                 }
             }
