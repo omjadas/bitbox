@@ -28,7 +28,7 @@ import unimelb.bitbox.util.FileSystemManager;
 
 public class Client extends Thread {
     public static ArrayList<Client> establishedClients = new ArrayList<Client>();
-    private Socket clientSocket;
+    private Socket socket;
     private String host;
     private int port;
     private FileSystemManager fileSystemManager;
@@ -40,8 +40,8 @@ public class Client extends Thread {
         this.port = port;
         this.fileSystemManager = fileSystemManager;
         try {
-            this.clientSocket = new Socket(host, port);
-            HandshakeRequest requestAction = new HandshakeRequest(this.clientSocket, host, port);
+            this.socket = new Socket(host, port);
+            HandshakeRequest requestAction = new HandshakeRequest(this.socket, host, port);
             requestAction.send();
             this.start();
         } catch (Exception e) {
@@ -50,7 +50,7 @@ public class Client extends Thread {
     }
 
     public Client(Socket socket, FileSystemManager fileSystemManager) {
-        this.clientSocket = socket;
+        this.socket = socket;
         this.fileSystemManager = fileSystemManager;
         if (establishedClients.size() == Peer.maximumIncommingConnections) {
             new ConnectionRefused(socket, "connection limit reached").send();
@@ -84,37 +84,37 @@ public class Client extends Thread {
         System.out.println(command);
 
         if (command.equals("INVALID_PROTOCOL")) {
-            action = new InvalidProtocol(clientSocket, message);
+            action = new InvalidProtocol(socket, message);
         } else if (command.equals("CONNECTION_REFUSED")) {
-            action = new ConnectionRefused(clientSocket, message);
+            action = new ConnectionRefused(socket, message);
         } else if (command.equals("HANDSHAKE_REQUEST")) {
-            action = new HandshakeRequest(clientSocket, message);
+            action = new HandshakeRequest(socket, message);
         } else if (command.equals("HANDSHAKE_RESPONSE")) {
-            action = new HandshakeResponse(clientSocket, message);
+            action = new HandshakeResponse(socket, message);
         } else if (command.equals("FILE_CREATE_REQUEST")) {
-            action = new FileCreateRequest(clientSocket, message);
+            action = new FileCreateRequest(socket, message);
         } else if (command.equals("FILE_CREATE_RESPONSE")) {
-            action = new FileCreateResponse(clientSocket, message);
+            action = new FileCreateResponse(socket, message);
         } else if (command.equals("FILE_DELETE_REQUEST")) {
-            action = new FileDeleteRequest(clientSocket, message);
+            action = new FileDeleteRequest(socket, message);
         } else if (command.equals("FILE_DELETE_RESPONSE")) {
-            action = new FileDeleteResponse(clientSocket, message);
+            action = new FileDeleteResponse(socket, message);
         } else if (command.equals("FILE_MODIFY_REQUEST")) {
-            action = new FileModifyRequest(clientSocket, message);
+            action = new FileModifyRequest(socket, message);
         } else if (command.equals("FILE_MODIFY_RESPONSE")) {
-            action = new FileModifyResponse(clientSocket, message);
+            action = new FileModifyResponse(socket, message);
         } else if (command.equals("DIRECTORY_CREATE_REQUEST")) {
-            action = new DirectoryCreateRequest(clientSocket, message);
+            action = new DirectoryCreateRequest(socket, message);
         } else if (command.equals("DIRECTORY_CREATE_RESPONSE")) {
-            action = new DirectoryCreateResponse(clientSocket, message);
+            action = new DirectoryCreateResponse(socket, message);
         } else if (command.equals("DIRECTORY_DELETE_REQUEST")) {
-            action = new DirectoryDeleteRequest(clientSocket, message);
+            action = new DirectoryDeleteRequest(socket, message);
         } else if (command.equals("DIRECTORY_DELETE_RESPONSE")) {
-            action = new DirectoryDeleteResponse(clientSocket, message);
+            action = new DirectoryDeleteResponse(socket, message);
         } else if (command.equals("FILE_BYTES_REQUEST")) {
-            action = new FileBytesRequest(clientSocket, message);
+            action = new FileBytesRequest(socket, message);
         } else if (command.equals("FILE_BYTES_RESPONSE")) {
-            action = new FileBytesResponse(clientSocket, message);
+            action = new FileBytesResponse(socket, message);
         }
 
         return action;
@@ -122,7 +122,7 @@ public class Client extends Thread {
 
     public void run() {
         try {
-            BufferedReader in = new BufferedReader(new InputStreamReader(this.clientSocket.getInputStream(), "UTF-8"));
+            BufferedReader in = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), "UTF-8"));
 
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
