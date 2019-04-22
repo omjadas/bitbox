@@ -4,6 +4,9 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
@@ -15,10 +18,10 @@ public class FileBytesRequest implements Action {
     private static final String command = "FILE_BYTES_REQUEST";
     private FileDescriptor fileDescriptor;
     private String pathName;
-    private int position;
-    private int length;
+    private long position;
+    private long length;
 
-    public FileBytesRequest(Socket socket, FileDescriptor fileDescriptor, String pathName, int position, int length) {
+    public FileBytesRequest(Socket socket, FileDescriptor fileDescriptor, String pathName, long position, long length) {
         this.socket = socket;
         this.fileDescriptor = fileDescriptor;
         this.pathName = pathName;
@@ -30,8 +33,8 @@ public class FileBytesRequest implements Action {
         this.socket = socket;
         this.fileDescriptor = new FileDescriptor(message);
         this.pathName = message.getString("pathName");
-        this.position = message.getInteger("position");
-        this.length = message.getInteger("length");
+        this.position = message.getLong("position");
+        this.length = message.getLong("length");
     }
 
     @Override
@@ -40,7 +43,16 @@ public class FileBytesRequest implements Action {
         String content = "";
         Boolean status = false;
 
-        // TODO: Execute action
+        try {
+            ByteBuffer buf = fileSystemManager.readFile(fileDescriptor.md5, position, length);
+            byte[] bytes = new byte[buf.rewind().remaining()];
+            buf.get(bytes);
+            content = Base64.getEncoder().encodeToString(bytes);
+            status = true;
+            message = "successful read";
+        } catch (NoSuchAlgorithmException | IOException e) {
+            message = "unsuccessful read";
+        }
 
         Action response = new FileBytesResponse(socket, fileDescriptor, pathName, position, length, content, message,
                 status);
