@@ -4,9 +4,14 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.security.NoSuchAlgorithmException;
+
+import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
 import unimelb.bitbox.FileDescriptor;
+import unimelb.bitbox.ServerMain;
 
 public class FileModifyRequest implements Action {
 
@@ -32,10 +37,43 @@ public class FileModifyRequest implements Action {
         String message = "";
         Boolean status = false;
 
-        // TODO: Execute action
+        if (!fileSystemManager.isSafePathName(pathName)) {
+            message = "unsafe pathname given";
+        } else if (!fileSystemManager.fileNameExists(pathName)) {
+            message = "pathname does not exist";
+        } else if (fileSystemManager.fileNameExists(pathName, fileDescriptor.md5)) {
+            message = "file already exists with matching content";
+        } else {
+            try {
+                if (status = fileSystemManager.modifyFileLoader(pathName, fileDescriptor.md5,
+                        fileDescriptor.lastModified)) {
+                    message = "file loader ready";
+                } else {
+                    message = "there was a problem modifying the file";
+                }
+            } catch (IOException e) {
+                message = "there was a problem modifying the file";
+            }
+        }
 
         Action response = new FileModifyResponse(socket, fileDescriptor, pathName, message, status);
         response.send();
+
+        if (status) {
+            try {
+                if (!fileSystemManager.checkShortcut(pathName)) {
+                    int blockSize = Integer.parseInt(Configuration.getConfigurationValue("blockSize"));
+                    Action bytes = new FileBytesRequest(socket, fileDescriptor, pathName, 0,
+                            fileDescriptor.fileSize < blockSize ? fileDescriptor.fileSize : blockSize);
+                    bytes.send();
+                }
+            } catch (NumberFormatException | NoSuchAlgorithmException | IOException e) {
+                int blockSize = Integer.parseInt(Configuration.getConfigurationValue("blockSize"));
+                Action bytes = new FileBytesRequest(socket, fileDescriptor, pathName, 0,
+                        fileDescriptor.fileSize < blockSize ? fileDescriptor.fileSize : blockSize);
+                bytes.send();
+            }
+        }
     }
 
     @Override
