@@ -27,6 +27,7 @@ import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
 import unimelb.bitbox.util.FileSystemManager.EVENT;
 import unimelb.bitbox.util.FileSystemManager.FileSystemEvent;
+import unimelb.bitbox.util.SchemaValidator;
 import unimelb.bitbox.FileDescriptor;
 
 public class Client extends Thread {
@@ -95,7 +96,7 @@ public class Client extends Thread {
      * @return Boolean indication whether the message is valid
      */
     private boolean validateRequest(Document message) {
-        return true;
+    	return SchemaValidator.validateSchema(message);
     }
 
     /**
