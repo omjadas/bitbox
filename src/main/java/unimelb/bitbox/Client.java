@@ -56,7 +56,12 @@ public class Client extends Thread {
     public Client(Socket socket, FileSystemManager fileSystemManager) {
         this.socket = socket;
         this.fileSystemManager = fileSystemManager;
-        establishConnection();
+
+        if (establishedClients.size() == Peer.maximumIncommingConnections) {
+            new ConnectionRefused(socket, "connection limit reached").send();
+            return;
+        }
+
         this.start();
     }
 
@@ -64,10 +69,7 @@ public class Client extends Thread {
      * Establish a connection with the client
      */
     public void establishConnection() {
-        if (establishedClients.size() == Peer.maximumIncommingConnections) {
-            new ConnectionRefused(socket, "connection limit reached").send();
-            return;
-        }
+        establishedConnection = true;
         establishedClients.add(this);
     }
 
@@ -140,10 +142,9 @@ public class Client extends Thread {
         } else if (command.equals("CONNECTION_REFUSED")) {
             action = new ConnectionRefused(socket, message);
         } else if (command.equals("HANDSHAKE_REQUEST")) {
-            action = new HandshakeRequest(socket, message);
+            action = new HandshakeRequest(socket, message, this);
         } else if (command.equals("HANDSHAKE_RESPONSE")) {
-            action = new HandshakeResponse(socket, message);
-            establishedClients.add(this);
+            action = new HandshakeResponse(socket, message, this);
         } else if (command.equals("FILE_CREATE_REQUEST")) {
             action = new FileCreateRequest(socket, message);
         } else if (command.equals("FILE_CREATE_RESPONSE")) {
