@@ -96,7 +96,7 @@ public class Client extends Thread {
      * @return Boolean indication whether the message is valid
      */
     private boolean validateRequest(Document message) {
-    	return SchemaValidator.validateSchema(message);
+        return SchemaValidator.validateSchema(message);
     }
 
     /**
