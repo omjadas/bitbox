@@ -31,7 +31,7 @@ public class HandshakeRequest implements Action {
 
         this.host = clientHost;
         this.port = clientPort;
-        
+
         this.client = client;
     }
 

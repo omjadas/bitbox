@@ -31,13 +31,13 @@ public class HandshakeResponse implements Action {
 
         this.host = clientHost;
         this.port = clientPort;
-        
+
         this.client = client;
     }
 
     @Override
     public void execute(FileSystemManager fileSystemManager) {
-    	client.establishConnection();
+        client.establishConnection();
     }
 
     @Override

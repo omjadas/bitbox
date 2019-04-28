@@ -55,19 +55,19 @@ public class Client extends Thread {
     public Client(Socket socket, FileSystemManager fileSystemManager) {
         this.socket = socket;
         this.fileSystemManager = fileSystemManager;
-        
+
         if (establishedClients.size() == Peer.maximumIncommingConnections) {
             new ConnectionRefused(socket, "connection limit reached").send();
             return;
         }
-        
+
         this.start();
     }
 
     /**
      * Establish a connection with the client
      */
-    public void establishConnection() {        
+    public void establishConnection() {
         establishedConnection = true;
         establishedClients.add(this);
     }
@@ -182,8 +182,8 @@ public class Client extends Thread {
                 System.out.println(inputLine);
 
                 Document message = Document.parse(inputLine);
-                
-                if (validateRequest(message)) {                	
+
+                if (validateRequest(message)) {
                     Action action = getAction(message);
                     action.execute(fileSystemManager);
                 }
