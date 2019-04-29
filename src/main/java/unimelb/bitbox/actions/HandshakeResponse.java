@@ -15,10 +15,14 @@ public class HandshakeResponse implements Action {
 
     private Socket socket;
     private static final String command = "HANDSHAKE_RESPONSE";
+    private String host;
+    private long port;
     private Client client;
 
-    public HandshakeResponse(Socket socket) {
+    public HandshakeResponse(Socket socket, String host, long port) {
         this.socket = socket;
+        this.host = host;
+        this.port = port;
     }
 
     public HandshakeResponse(Socket socket, Document message, Client client) {
@@ -57,8 +61,8 @@ public class HandshakeResponse implements Action {
         Document message = new Document();
         Document hostPort = new Document();
 
-        hostPort.append("host", Configuration.getConfigurationValue("advertisedName"));
-        hostPort.append("port", Integer.parseInt(Configuration.getConfigurationValue("port")));
+        hostPort.append("host", host);
+        hostPort.append("port", port);
 
         message.append("command", command);
         message.append("hostPort", hostPort);

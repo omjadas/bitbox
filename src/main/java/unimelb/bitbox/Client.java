@@ -27,6 +27,7 @@ import unimelb.bitbox.actions.FileModifyResponse;
 import unimelb.bitbox.actions.HandshakeRequest;
 import unimelb.bitbox.actions.HandshakeResponse;
 import unimelb.bitbox.actions.InvalidProtocol;
+import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
 import unimelb.bitbox.util.FileSystemManager.EVENT;
@@ -49,7 +50,9 @@ public class Client extends Thread {
         this.fileSystemManager = fileSystemManager;
         try {
             this.socket = new Socket(host, port);
-            HandshakeRequest requestAction = new HandshakeRequest(this.socket);
+            HandshakeRequest requestAction = new HandshakeRequest(this.socket,
+                    Configuration.getConfigurationValue("advertisedName"),
+                    Integer.parseInt(Configuration.getConfigurationValue("port")));
             requestAction.send();
             this.start();
         } catch (ConnectException e) {
@@ -67,7 +70,7 @@ public class Client extends Thread {
             new ConnectionRefused(socket, "connection limit reached").send();
             return;
         }
-        
+
         this.isIncomingConnection = true;
         this.start();
     }
@@ -78,7 +81,7 @@ public class Client extends Thread {
     public void establishConnection() {
         establishedClients.add(this);
     }
-    
+
     public static int getNumberIncomingEstablishedConnections() {
         int numIncoming = 0;
         for (Client client : Client.establishedClients) {
@@ -86,14 +89,14 @@ public class Client extends Thread {
                 numIncoming++;
             }
         }
-        
+
         return numIncoming;
     }
 
     public boolean isIncomingConnection() {
         return this.isIncomingConnection;
     }
-    
+
     /**
      * Return the host of the client
      * 
@@ -115,11 +118,11 @@ public class Client extends Thread {
     public void setHost(String host) {
         this.host = host;
     }
-    
+
     public void setPort(long port) {
         this.port = port;
     }
-    
+
     /**
      * Determine if the message is valid
      * 
@@ -210,7 +213,7 @@ public class Client extends Thread {
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
                 System.out.println(inputLine);
-                
+
                 Document message = Document.parse(inputLine);
 
                 if (validateRequest(message)) {
@@ -221,11 +224,11 @@ public class Client extends Thread {
 
         } catch (SocketException e) {
             log.info("Client " + this.host + ":" + this.port + " has disconnected");
-            
+
             Client.establishedClients.remove(this);
-            synchronized(Peer.getClientSearchLock()) {
+            synchronized (Peer.getClientSearchLock()) {
                 Peer.getClientSearchLock().notifyAll();
-            }            
+            }
         } catch (IOException e) {
             System.out.println("is this triggered");
             e.printStackTrace();
