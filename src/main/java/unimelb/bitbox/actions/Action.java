@@ -1,8 +1,11 @@
 package unimelb.bitbox.actions;
 
+import java.util.logging.Logger;
+
 import unimelb.bitbox.util.FileSystemManager;
 
 public interface Action {
+    public static Logger log = Logger.getLogger(Action.class.getName());
 
     /**
      * Execute the action

@@ -5,16 +5,22 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.logging.Logger;
+
 import unimelb.bitbox.Client;
+import unimelb.bitbox.ClientSearcher;
+import unimelb.bitbox.Peer;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
+import unimelb.bitbox.util.HostPort;
 
 public class ConnectionRefused implements Action {
 
     private Socket socket;
     private static final String command = "CONNECTION_REFUSED";
     private String message;
-
+    private Document parsedJSON;
+        
     public ConnectionRefused(Socket socket, String message) {
         this.socket = socket;
         this.message = message;
@@ -23,10 +29,24 @@ public class ConnectionRefused implements Action {
     public ConnectionRefused(Socket socket, Document message) {
         this.socket = socket;
         this.message = message.getString("message");
+        this.parsedJSON = message;
     }
 
     @Override
     public void execute(FileSystemManager fileSystemManager) {
+        ArrayList<Document> hostPorts = (ArrayList<Document>) this.parsedJSON.get("peers");
+
+        for (Document hostPort : hostPorts) {
+            String host = hostPort.getString("host");
+            long port = hostPort.getLong("port");
+            
+            HostPort clientHostPort = new HostPort(host, (int) port);
+            ClientSearcher.potentialClients.add(clientHostPort);
+            System.out.println(ClientSearcher.potentialClients.toString());
+            synchronized(Peer.getClientSearchLock()) {
+                Peer.getClientSearchLock().notifyAll();
+            }  
+        }
 
     }
 
@@ -42,8 +62,13 @@ public class ConnectionRefused implements Action {
             out.write(toJSON());
             out.newLine();
             out.flush();
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {}
+            
+            socket.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            log.info("Socket was closed while sending message");
         }
     }
 

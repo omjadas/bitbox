@@ -4,8 +4,10 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.util.logging.Logger;
 
 import unimelb.bitbox.Client;
+import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
 
@@ -13,25 +15,14 @@ public class HandshakeResponse implements Action {
 
     private Socket socket;
     private static final String command = "HANDSHAKE_RESPONSE";
-    private String host;
-    private long port;
     private Client client;
 
-    public HandshakeResponse(Socket socket, String host, long port) {
+    public HandshakeResponse(Socket socket) {
         this.socket = socket;
-        this.host = host;
-        this.port = port;
     }
 
     public HandshakeResponse(Socket socket, Document message, Client client) {
         this.socket = socket;
-
-        String clientHost = ((Document) message.get("hostPort")).getString("host");
-        long clientPort = ((Document) message.get("hostPort")).getLong("port");
-
-        this.host = clientHost;
-        this.port = clientPort;
-
         this.client = client;
     }
 
@@ -53,7 +44,7 @@ public class HandshakeResponse implements Action {
             out.newLine();
             out.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            log.info("Socket was closed while sending message");
         }
     }
 
@@ -66,8 +57,8 @@ public class HandshakeResponse implements Action {
         Document message = new Document();
         Document hostPort = new Document();
 
-        hostPort.append("host", host);
-        hostPort.append("port", port);
+        hostPort.append("host", Configuration.getConfigurationValue("advertisedName"));
+        hostPort.append("port", Integer.parseInt(Configuration.getConfigurationValue("port")));
 
         message.append("command", command);
         message.append("hostPort", hostPort);
