@@ -30,9 +30,12 @@ public class HandshakeRequest implements Action {
         String clientHost = ((Document) message.get("hostPort")).getString("host");
         long clientPort = ((Document) message.get("hostPort")).getLong("port");
 
+        this.host = clientHost;
+        this.port = clientPort;
+        
         this.client = client;
-        client.setPort(clientPort);
-        client.setHost(clientHost);
+        client.setHost(host);
+        client.setPort(port);
     }
 
     @Override
