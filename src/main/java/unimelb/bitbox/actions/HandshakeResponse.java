@@ -4,8 +4,10 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.util.logging.Logger;
 
 import unimelb.bitbox.Client;
+import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
 
@@ -53,7 +55,7 @@ public class HandshakeResponse implements Action {
             out.newLine();
             out.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            log.info("Socket was closed while sending message");
         }
     }
 

@@ -6,6 +6,7 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 
 import unimelb.bitbox.Client;
+import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
 
@@ -31,14 +32,17 @@ public class HandshakeRequest implements Action {
 
         this.host = clientHost;
         this.port = clientPort;
-
+        
         this.client = client;
+        client.setHost(host);
+        client.setPort(port);
     }
 
     @Override
     public void execute(FileSystemManager fileSystemManager) {
         Action response;
-        response = new HandshakeResponse(socket, host, port);
+        response = new HandshakeResponse(socket, Configuration.getConfigurationValue("advertisedName"),
+                Long.parseLong(Configuration.getConfigurationValue("port")));
         response.send();
         client.establishConnection();
     }
@@ -56,7 +60,7 @@ public class HandshakeRequest implements Action {
             out.newLine();
             out.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            log.info("Socket was closed while sending message");
         }
     }
 

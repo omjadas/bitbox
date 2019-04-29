@@ -7,7 +7,7 @@ import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.HostPort;
 
 public class ClientSearcher extends Thread {
-    public static Queue<HostPort> potentialClients = new LinkedList<HostPort>();
+    public static volatile Queue<HostPort> potentialClients = new LinkedList<HostPort>();
 
     public ClientSearcher() {
         String clientList = Configuration.getConfigurationValue("peers");
@@ -30,13 +30,15 @@ public class ClientSearcher extends Thread {
 
     public synchronized void run() {
         while (!isInterrupted()) {
-            while (ClientSearcher.potentialClients.size() == 0 || Client.establishedClients.size() == 10) {
-                try {
-                    wait();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+            synchronized(Peer.getClientSearchLock()) {
+                while (ClientSearcher.potentialClients.size() == 0 || Client.getNumberIncomingEstablishedConnections() == Peer.maximumIncommingConnections) {
+                    try {
+                        Peer.getClientSearchLock().wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
-            }
+            }           
 
             HostPort potentialClient = potentialClients.remove();
             new Client(potentialClient.host, potentialClient.port, ServerMain.fileSystemManager);
