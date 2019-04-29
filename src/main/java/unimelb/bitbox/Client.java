@@ -52,7 +52,7 @@ public class Client extends Thread {
             this.socket = new Socket(host, port);
             HandshakeRequest requestAction = new HandshakeRequest(this.socket,
                     Configuration.getConfigurationValue("advertisedName"),
-                    Integer.parseInt(Configuration.getConfigurationValue("port")));
+                    Long.parseLong(Configuration.getConfigurationValue("port")));
             requestAction.send();
             this.start();
         } catch (ConnectException e) {

@@ -42,7 +42,7 @@ public class HandshakeRequest implements Action {
     public void execute(FileSystemManager fileSystemManager) {
         Action response;
         response = new HandshakeResponse(socket, Configuration.getConfigurationValue("advertisedName"),
-                Integer.parseInt(Configuration.getConfigurationValue("port")));
+                Long.parseLong(Configuration.getConfigurationValue("port")));
         response.send();
         client.establishConnection();
     }
