@@ -3,9 +3,11 @@ package unimelb.bitbox;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.security.NoSuchAlgorithmException;
+import java.util.Timer;
 import java.util.logging.Logger;
 
 import unimelb.bitbox.util.Configuration;
+import unimelb.bitbox.util.GenerateSyncEventInterval;
 
 public class Peer extends Thread {
     private static Logger log = Logger.getLogger(Peer.class.getName());
@@ -23,8 +25,12 @@ public class Peer extends Thread {
 
         Peer peer = new Peer();
         peer.start();
-        new ServerMain();
+        ServerMain server = new ServerMain();
         new ClientSearcher();
+        
+        Timer syncIntervalTimer = new Timer();
+        int syncInterval = Integer.parseInt(Configuration.getConfigurationValue("syncInterval"))*1000;
+        syncIntervalTimer.schedule(new GenerateSyncEventInterval(server), syncInterval, syncInterval);
     }
 
     public static Object getClientSearchLock() {
