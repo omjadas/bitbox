@@ -47,7 +47,7 @@ public class DirectoryCreateResponse implements Action {
             out.newLine();
             out.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            log.info("Socket was closed while sending message");
         }
     }
 

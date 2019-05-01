@@ -16,6 +16,10 @@ public class ServerMain implements FileSystemObserver {
     public ServerMain() throws NumberFormatException, IOException, NoSuchAlgorithmException {
         fileSystemManager = new FileSystemManager(Configuration.getConfigurationValue("path"), this);
     }
+    
+    public static FileSystemManager getFileSystemManager() {
+        return ServerMain.fileSystemManager;
+    }
 
     @Override
     public void processFileSystemEvent(FileSystemEvent fileSystemEvent) {
