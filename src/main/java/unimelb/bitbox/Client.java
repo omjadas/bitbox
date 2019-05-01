@@ -37,6 +37,7 @@ public class Client extends Thread {
     private FileSystemManager fileSystemManager;
 
     private boolean establishedConnection = false;
+    
 
     public Client(String host, int port, FileSystemManager fileSystemManager) {
         this.host = host;
@@ -51,6 +52,7 @@ public class Client extends Thread {
             e.printStackTrace();
         }
     }
+    
 
     public Client(Socket socket, FileSystemManager fileSystemManager) {
         this.socket = socket;
