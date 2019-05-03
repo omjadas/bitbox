@@ -50,6 +50,10 @@ public class DirectoryDeleteRequest implements Action {
     @Override
     public boolean compare(Document message) {
         boolean correctCommand = message.getString("command").equals("DIRECTORY_DELETE_RESPONSE");
+        if (!correctCommand) {
+            return false;
+        }
+        
         boolean matchingPath = message.getString("pathName").equals(this.pathName);
         
         return correctCommand && matchingPath;

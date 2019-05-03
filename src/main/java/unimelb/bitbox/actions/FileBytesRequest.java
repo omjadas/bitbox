@@ -66,6 +66,11 @@ public class FileBytesRequest implements Action {
     @Override
     public boolean compare(Document message) {
         boolean correctCommand = message.getString("command").equals("FILE_BYTES_RESPONSE");
+        if (!correctCommand) {
+            return false;
+        }
+        
+        
         boolean matchingPath = message.getString("pathName").equals(this.pathName);
         boolean matchingFileDesc = this.fileDescriptor.compare(new FileDescriptor(message));
         boolean matchingLength = message.getLong("length") == this.length;
