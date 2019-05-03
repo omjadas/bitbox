@@ -64,8 +64,7 @@ public class FileBytesResponse implements Action {
                 }
             }
         } catch (IOException | NoSuchAlgorithmException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            log.info("Error while writing bytes to disk");
         }
     }
 
