@@ -18,10 +18,11 @@ public class HandshakeRequest implements Action {
     private long port;
     private Client client;
 
-    public HandshakeRequest(Socket socket, String host, long port) {
+    public HandshakeRequest(Socket socket, String host, long port, Client client) {
         this.socket = socket;
         this.host = host;
         this.port = port;
+        this.client = client;
     }
 
     public HandshakeRequest(Socket socket, Document message, Client client) {
@@ -30,26 +31,23 @@ public class HandshakeRequest implements Action {
         String clientHost = ((Document) message.get("hostPort")).getString("host");
         long clientPort = ((Document) message.get("hostPort")).getLong("port");
 
-        this.host = clientHost;
-        this.port = clientPort;
-        
         this.client = client;
-        client.setHost(host);
-        client.setPort(port);
+        client.setHost(clientHost);
+        client.setPort(clientPort);   
     }
 
     @Override
     public void execute(FileSystemManager fileSystemManager) {
         Action response;
         response = new HandshakeResponse(socket, Configuration.getConfigurationValue("advertisedName"),
-                Long.parseLong(Configuration.getConfigurationValue("port")));
+                Long.parseLong(Configuration.getConfigurationValue("port")), this.client);
         response.send();
         client.establishConnection();
     }
 
     @Override
-    public int compare(Action action) {
-        return 0;
+    public boolean compare(Document message) {
+        return message.getString("command").equals("HANDSHAKE_RESPONSE") || message.getString("command").equals("CONNECTION_REFUSED");
     }
 
     @Override
@@ -59,6 +57,8 @@ public class HandshakeRequest implements Action {
             out.write(toJSON());
             out.newLine();
             out.flush();
+            log.info("Sent to " + this.client.getHost() + ":" + this.client.getPort() + ": " + toJSON());
+            this.client.addToWaitingActions(this);
         } catch (IOException e) {
             log.info("Socket was closed while sending message");
         }

@@ -10,6 +10,7 @@ import java.util.Base64;
 
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
+import unimelb.bitbox.Client;
 import unimelb.bitbox.FileDescriptor;
 
 public class FileBytesRequest implements Action {
@@ -20,21 +21,24 @@ public class FileBytesRequest implements Action {
     private String pathName;
     private long position;
     private long length;
+    private Client client;
 
-    public FileBytesRequest(Socket socket, FileDescriptor fileDescriptor, String pathName, long position, long length) {
+    public FileBytesRequest(Socket socket, FileDescriptor fileDescriptor, String pathName, long position, long length, Client client) {
         this.socket = socket;
         this.fileDescriptor = fileDescriptor;
         this.pathName = pathName;
         this.position = position;
         this.length = length;
+        this.client = client;
     }
 
-    public FileBytesRequest(Socket socket, Document message) {
+    public FileBytesRequest(Socket socket, Document message, Client client) {
         this.socket = socket;
         this.fileDescriptor = new FileDescriptor(message);
         this.pathName = message.getString("pathName");
         this.position = message.getLong("position");
         this.length = message.getLong("length");
+        this.client = client;
     }
 
     @Override
@@ -55,13 +59,19 @@ public class FileBytesRequest implements Action {
         }
 
         Action response = new FileBytesResponse(socket, fileDescriptor, pathName, position, length, content, message,
-                status);
+                status, client);
         response.send();
     }
 
     @Override
-    public int compare(Action action) {
-        return 0;
+    public boolean compare(Document message) {
+        boolean correctCommand = message.getString("command").equals("FILE_BYTES_RESPONSE");
+        boolean matchingPath = message.getString("pathName").equals(this.pathName);
+        boolean matchingFileDesc = this.fileDescriptor.compare(new FileDescriptor(message));
+        boolean matchingLength = message.getLong("length") == this.length;
+        boolean matchingPos = message.getLong("position") == this.position;
+        
+        return (correctCommand && matchingPath && matchingFileDesc && matchingLength && matchingPos);
     }
 
     @Override
@@ -71,6 +81,8 @@ public class FileBytesRequest implements Action {
             out.write(toJSON());
             out.newLine();
             out.flush();
+            log.info("Sent to " + this.client.getHost() + ":" + this.client.getPort() + ": " + toJSON());
+            this.client.addToWaitingActions(this);
         } catch (IOException e) {
             log.info("Socket was closed while sending message");
         }

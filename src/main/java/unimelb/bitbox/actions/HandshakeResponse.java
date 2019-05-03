@@ -19,10 +19,11 @@ public class HandshakeResponse implements Action {
     private long port;
     private Client client;
 
-    public HandshakeResponse(Socket socket, String host, long port) {
+    public HandshakeResponse(Socket socket, String host, long port, Client client) {
         this.socket = socket;
         this.host = host;
         this.port = port;
+        this.client = client;
     }
 
     public HandshakeResponse(Socket socket, Document message, Client client) {
@@ -43,8 +44,8 @@ public class HandshakeResponse implements Action {
     }
 
     @Override
-    public int compare(Action action) {
-        return 0;
+    public boolean compare(Document action) {
+        return true;
     }
 
     @Override
@@ -54,6 +55,7 @@ public class HandshakeResponse implements Action {
             out.write(toJSON());
             out.newLine();
             out.flush();
+            log.info("Sent to " + this.client.getHost() + ":" + this.client.getPort() + ": " + toJSON());
         } catch (IOException e) {
             log.info("Socket was closed while sending message");
         }

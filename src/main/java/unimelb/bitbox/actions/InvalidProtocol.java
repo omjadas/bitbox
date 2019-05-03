@@ -4,6 +4,8 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+
+import unimelb.bitbox.Client;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
 
@@ -12,15 +14,18 @@ public class InvalidProtocol implements Action {
     private Socket socket;
     private static final String command = "INVALID_PROTOCOL";
     private String message;
+    private Client client;
 
-    public InvalidProtocol(Socket socket, String message) {
+    public InvalidProtocol(Socket socket, String message, Client client) {
         this.socket = socket;
         this.message = message;
+        this.client = client;
     }
 
-    public InvalidProtocol(Socket socket, Document message) {
+    public InvalidProtocol(Socket socket, Document message, Client client) {
         this.socket = socket;
         this.message = message.getString("message");
+        this.client = client;
     }
 
     @Override
@@ -29,8 +34,8 @@ public class InvalidProtocol implements Action {
     }
 
     @Override
-    public int compare(Action action) {
-        return 0;
+    public boolean compare(Document action) {
+        return true;
     }
 
     @Override
@@ -40,6 +45,11 @@ public class InvalidProtocol implements Action {
             out.write(toJSON());
             out.newLine();
             out.flush();
+            log.info("Sent to " + this.client.getHost() + ":" + this.client.getPort() + ": " + toJSON());
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {}
+            socket.close();
         } catch (IOException e) {
             log.info("Socket was closed while sending message");
         }

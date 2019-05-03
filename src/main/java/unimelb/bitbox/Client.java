@@ -7,6 +7,7 @@ import java.net.ConnectException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.logging.Logger;
 
@@ -43,8 +44,31 @@ public class Client extends Thread {
     private long port;
     private FileSystemManager fileSystemManager;
     private boolean isIncomingConnection = false;
+    
+    private HashSet<Action> waitingActions;
 
-    public Client(String host, int port, FileSystemManager fileSystemManager) {
+    public static HashMap<String, String> responseToRequest;
+    public static HashSet<String> validCommandsBeforeConnectionEstablished;
+    
+    static {
+        responseToRequest = new HashMap<>();
+
+        responseToRequest.put("FILE_CREATE_RESPONSE", "FILE_CREATE_REQUEST");
+        responseToRequest.put("FILE_DELETE_RESPONSE", "FILE_DELETE_REQUEST");
+        responseToRequest.put("FILE_MODIFY_RESPONSE", "FILE_MODIFY_REQUEST");
+        responseToRequest.put("DIRECTORY_CREATE_RESPONSE", "DIRECTORY_CREATE_REQUEST");
+        responseToRequest.put("DIRECTORY_DELETE_RESPONSE", "DIRECTORY_DELETE_REQUEST");
+        responseToRequest.put("FILE_BYTES_RESPONSE", "FILE_BYTES_REQUEST");
+
+        validCommandsBeforeConnectionEstablished = new HashSet<>();
+
+        validCommandsBeforeConnectionEstablished.add("HANDSHAKE_REQUEST");
+        validCommandsBeforeConnectionEstablished.add("HANDSHAKE_RESPONSE");
+        validCommandsBeforeConnectionEstablished.add("CONNECTION_REFUSED");
+    }
+
+    public Client(String host, int port, FileSystemManager fileSystemManager) {     
+        waitingActions = new HashSet<>();
         this.host = host;
         this.port = port;
         this.fileSystemManager = fileSystemManager;
@@ -52,7 +76,7 @@ public class Client extends Thread {
             this.socket = new Socket(host, port);
             HandshakeRequest requestAction = new HandshakeRequest(this.socket,
                     Configuration.getConfigurationValue("advertisedName"),
-                    Long.parseLong(Configuration.getConfigurationValue("port")));
+                    Long.parseLong(Configuration.getConfigurationValue("port")), this);
             requestAction.send();
             this.start();
         } catch (ConnectException e) {
@@ -63,11 +87,12 @@ public class Client extends Thread {
     }
 
     public Client(Socket socket, FileSystemManager fileSystemManager) {
+        waitingActions = new HashSet<>();
         this.socket = socket;
         this.fileSystemManager = fileSystemManager;
 
         if (Client.getNumberIncomingEstablishedConnections() == Peer.maximumIncommingConnections) {
-            new ConnectionRefused(socket, "connection limit reached").send();
+            new ConnectionRefused(socket, "connection limit reached", this).send();
             return;
         }
 
@@ -130,7 +155,44 @@ public class Client extends Thread {
      * @return Boolean indication whether the message is valid
      */
     private boolean validateRequest(Document message) {
-        return SchemaValidator.validateSchema(message);
+        if (!SchemaValidator.validateSchema(message)) {
+            return false;
+        }
+
+        String command = message.getString("command");
+
+        if (!Client.establishedClients.contains(this)) {     
+            if (!validCommandsBeforeConnectionEstablished.contains(command)) {
+                return false;
+            }
+            
+            if (command == "HANDSHAKE_RESPONSE" || command == "CONNECTION_REFUSED") {                
+                return checkIfExpectingResponse(message);
+            } 
+        } else {
+            if (responseToRequest.containsKey(command)) {
+                return checkIfExpectingResponse(message);
+            } else if (!responseToRequest.containsValue(command)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+    
+    private boolean checkIfExpectingResponse(Document message) {
+        for (Action action : waitingActions) {
+            if (action.compare(message)) {
+                waitingActions.remove(action);
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    public void addToWaitingActions(Action action) {
+        waitingActions.add(action);
     }
 
     /**
@@ -143,17 +205,17 @@ public class Client extends Thread {
 
         if (fileSystemEvent.event == EVENT.FILE_CREATE) {
             action = new FileCreateRequest(socket, new FileDescriptor(fileSystemEvent.fileDescriptor),
-                    fileSystemEvent.pathName);
+                    fileSystemEvent.pathName, this);
         } else if (fileSystemEvent.event == EVENT.FILE_DELETE) {
             action = new FileDeleteRequest(socket, new FileDescriptor(fileSystemEvent.fileDescriptor),
-                    fileSystemEvent.pathName);
+                    fileSystemEvent.pathName, this);
         } else if (fileSystemEvent.event == EVENT.FILE_MODIFY) {
             action = new FileModifyRequest(socket, new FileDescriptor(fileSystemEvent.fileDescriptor),
-                    fileSystemEvent.pathName);
+                    fileSystemEvent.pathName, this);
         } else if (fileSystemEvent.event == EVENT.DIRECTORY_CREATE) {
-            action = new DirectoryCreateRequest(socket, fileSystemEvent.pathName);
+            action = new DirectoryCreateRequest(socket, fileSystemEvent.pathName, this);
         } else if (fileSystemEvent.event == EVENT.DIRECTORY_DELETE) {
-            action = new DirectoryDeleteRequest(socket, fileSystemEvent.pathName);
+            action = new DirectoryDeleteRequest(socket, fileSystemEvent.pathName, this);
         }
 
         action.send();
@@ -170,37 +232,37 @@ public class Client extends Thread {
         String command = message.getString("command");
 
         if (command.equals("INVALID_PROTOCOL")) {
-            action = new InvalidProtocol(socket, message);
+            action = new InvalidProtocol(socket, message, this);
         } else if (command.equals("CONNECTION_REFUSED")) {
-            action = new ConnectionRefused(socket, message);
+            action = new ConnectionRefused(socket, message, this);
         } else if (command.equals("HANDSHAKE_REQUEST")) {
             action = new HandshakeRequest(socket, message, this);
         } else if (command.equals("HANDSHAKE_RESPONSE")) {
             action = new HandshakeResponse(socket, message, this);
         } else if (command.equals("FILE_CREATE_REQUEST")) {
-            action = new FileCreateRequest(socket, message);
+            action = new FileCreateRequest(socket, message, this);
         } else if (command.equals("FILE_CREATE_RESPONSE")) {
-            action = new FileCreateResponse(socket, message);
+            action = new FileCreateResponse(socket, message, this);
         } else if (command.equals("FILE_DELETE_REQUEST")) {
-            action = new FileDeleteRequest(socket, message);
+            action = new FileDeleteRequest(socket, message, this);
         } else if (command.equals("FILE_DELETE_RESPONSE")) {
-            action = new FileDeleteResponse(socket, message);
+            action = new FileDeleteResponse(socket, message, this);
         } else if (command.equals("FILE_MODIFY_REQUEST")) {
-            action = new FileModifyRequest(socket, message);
+            action = new FileModifyRequest(socket, message, this);
         } else if (command.equals("FILE_MODIFY_RESPONSE")) {
-            action = new FileModifyResponse(socket, message);
+            action = new FileModifyResponse(socket, message, this);
         } else if (command.equals("DIRECTORY_CREATE_REQUEST")) {
-            action = new DirectoryCreateRequest(socket, message);
+            action = new DirectoryCreateRequest(socket, message, this);
         } else if (command.equals("DIRECTORY_CREATE_RESPONSE")) {
-            action = new DirectoryCreateResponse(socket, message);
+            action = new DirectoryCreateResponse(socket, message, this);
         } else if (command.equals("DIRECTORY_DELETE_REQUEST")) {
-            action = new DirectoryDeleteRequest(socket, message);
+            action = new DirectoryDeleteRequest(socket, message, this);
         } else if (command.equals("DIRECTORY_DELETE_RESPONSE")) {
-            action = new DirectoryDeleteResponse(socket, message);
+            action = new DirectoryDeleteResponse(socket, message, this);
         } else if (command.equals("FILE_BYTES_REQUEST")) {
-            action = new FileBytesRequest(socket, message);
+            action = new FileBytesRequest(socket, message, this);
         } else if (command.equals("FILE_BYTES_RESPONSE")) {
-            action = new FileBytesResponse(socket, message);
+            action = new FileBytesResponse(socket, message, this);
         }
 
         return action;
@@ -212,13 +274,16 @@ public class Client extends Thread {
 
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
-                System.out.println(inputLine);
+                log.info("Received from " + this.host + ":" + this.port + ": " + inputLine);
 
                 Document message = Document.parse(inputLine);
 
                 if (validateRequest(message)) {
                     Action action = getAction(message);
                     action.execute(fileSystemManager);
+                } else {
+                    Action invalid = new InvalidProtocol(socket, "Could not validate message", this);
+                    invalid.send();
                 }
             }
 

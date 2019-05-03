@@ -6,6 +6,7 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
+import unimelb.bitbox.Client;
 import unimelb.bitbox.FileDescriptor;
 
 public class FileDeleteResponse implements Action {
@@ -16,22 +17,25 @@ public class FileDeleteResponse implements Action {
     private String pathName;
     private String message;
     private Boolean status;
-
+    private Client client;
+    
     public FileDeleteResponse(Socket socket, FileDescriptor fileDescriptor, String pathName, String message,
-            Boolean status) {
+            Boolean status, Client client) {
         this.socket = socket;
         this.fileDescriptor = fileDescriptor;
         this.pathName = pathName;
         this.message = message;
         this.status = status;
+        this.client = client;
     }
 
-    public FileDeleteResponse(Socket socket, Document message) {
+    public FileDeleteResponse(Socket socket, Document message, Client client) {
         this.socket = socket;
         this.fileDescriptor = new FileDescriptor(message);
         this.pathName = message.getString("pathName");
         this.message = message.getString("message");
         this.status = message.getBoolean("status");
+        this.client = client;
     }
 
     @Override
@@ -40,8 +44,8 @@ public class FileDeleteResponse implements Action {
     }
 
     @Override
-    public int compare(Action action) {
-        return 0;
+    public boolean compare(Document action) {
+        return true;
     }
 
     @Override
@@ -51,6 +55,7 @@ public class FileDeleteResponse implements Action {
             out.write(toJSON());
             out.newLine();
             out.flush();
+            log.info("Sent to " + this.client.getHost() + ":" + this.client.getPort() + ": " + toJSON());
         } catch (IOException e) {
             log.info("Socket was closed while sending message");
         }
