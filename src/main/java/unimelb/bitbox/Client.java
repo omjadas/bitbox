@@ -7,8 +7,11 @@ import java.net.ConnectException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import unimelb.bitbox.actions.Action;
@@ -38,14 +41,14 @@ import unimelb.bitbox.FileDescriptor;
 
 public class Client extends Thread {
     private static Logger log = Logger.getLogger(Client.class.getName());
-    public static HashSet<Client> establishedClients = new HashSet<Client>();
+    public static Set<Client> establishedClients = Collections.newSetFromMap(new ConcurrentHashMap<Client, Boolean>());
     private Socket socket;
     private String host;
     private long port;
     private FileSystemManager fileSystemManager;
     private boolean isIncomingConnection = false;
     
-    private HashSet<Action> waitingActions;
+    private Set<Action> waitingActions;
 
     public static HashMap<String, String> responseToRequest;
     public static HashSet<String> validCommandsBeforeConnectionEstablished;
@@ -68,7 +71,7 @@ public class Client extends Thread {
     }
 
     public Client(String host, int port, FileSystemManager fileSystemManager) {     
-        waitingActions = new HashSet<>();
+        waitingActions = Collections.newSetFromMap(new ConcurrentHashMap<Action, Boolean>());
         this.host = host;
         this.port = port;
         this.fileSystemManager = fileSystemManager;
@@ -87,7 +90,7 @@ public class Client extends Thread {
     }
 
     public Client(Socket socket, FileSystemManager fileSystemManager) {
-        waitingActions = new HashSet<>();
+        waitingActions = Collections.newSetFromMap(new ConcurrentHashMap<Action, Boolean>());
         this.socket = socket;
         this.fileSystemManager = fileSystemManager;
 
@@ -275,14 +278,15 @@ public class Client extends Thread {
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
                 log.info("Received from " + this.host + ":" + this.port + ": " + inputLine);
-
+                
+                
                 Document message = Document.parse(inputLine);
 
                 if (validateRequest(message)) {
                     Action action = getAction(message);
                     action.execute(fileSystemManager);
                 } else {
-                    Action invalid = new InvalidProtocol(socket, "Could not validate message", this);
+                    Action invalid = new InvalidProtocol(socket, "Could not validate message:" + message.toJson(), this);
                     invalid.send();
                 }
             }
