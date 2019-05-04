@@ -2,6 +2,7 @@ package unimelb.bitbox.actions;
 
 import java.util.logging.Logger;
 
+import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
 
 public interface Action {
@@ -18,7 +19,7 @@ public interface Action {
      * @param action The action to compare against
      * @return
      */
-    public int compare(Action action);
+    public boolean compare(Document message);
 
     /**
      * Send the action to the corresponding client

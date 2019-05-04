@@ -55,4 +55,8 @@ public class FileDescriptor {
         doc.append("fileSize", fileSize);
         return doc;
     }
+    
+    public boolean compare(FileDescriptor fd) {
+        return (fd.md5.equals(this.md5) && fd.lastModified == this.lastModified && fd.fileSize == this.fileSize);
+    }
 }

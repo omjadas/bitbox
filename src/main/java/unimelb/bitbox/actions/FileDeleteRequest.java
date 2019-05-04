@@ -6,6 +6,7 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
+import unimelb.bitbox.Client;
 import unimelb.bitbox.FileDescriptor;
 
 public class FileDeleteRequest implements Action {
@@ -14,17 +15,20 @@ public class FileDeleteRequest implements Action {
     private static final String command = "FILE_DELETE_REQUEST";
     private FileDescriptor fileDescriptor;
     private String pathName;
+    private Client client;
 
-    public FileDeleteRequest(Socket socket, FileDescriptor fileDescriptor, String pathName) {
+    public FileDeleteRequest(Socket socket, FileDescriptor fileDescriptor, String pathName, Client client) {
         this.socket = socket;
         this.fileDescriptor = fileDescriptor;
         this.pathName = pathName;
+        this.client = client;
     }
 
-    public FileDeleteRequest(Socket socket, Document message) {
+    public FileDeleteRequest(Socket socket, Document message, Client client) {
         this.socket = socket;
         this.fileDescriptor = new FileDescriptor(message);
         this.pathName = message.getString("pathName");
+        this.client = client;
     }
 
     @Override
@@ -42,13 +46,22 @@ public class FileDeleteRequest implements Action {
             message = "there was a problem deleting the file";
         }
 
-        Action response = new FileDeleteResponse(socket, fileDescriptor, pathName, message, status);
+        Action response = new FileDeleteResponse(socket, fileDescriptor, pathName, message, status, client);
         response.send();
     }
 
     @Override
-    public int compare(Action action) {
-        return 0;
+    public boolean compare(Document message) {
+        boolean correctCommand = message.getString("command").equals("FILE_DELETE_RESPONSE");
+        if (!correctCommand) {
+            return false;
+        }
+        
+        
+        boolean matchingPath = message.getString("pathName").equals(this.pathName);
+        boolean matchingFileDesc = this.fileDescriptor.compare(new FileDescriptor(message));
+        
+        return (correctCommand && matchingPath && matchingFileDesc);
     }
 
     @Override
@@ -58,6 +71,8 @@ public class FileDeleteRequest implements Action {
             out.write(toJSON());
             out.newLine();
             out.flush();
+            log.info("Sent to " + this.client.getHost() + ":" + this.client.getPort() + ": " + toJSON());
+            this.client.addToWaitingActions(this);
         } catch (IOException e) {
             log.info("Socket was closed while sending message");
         }

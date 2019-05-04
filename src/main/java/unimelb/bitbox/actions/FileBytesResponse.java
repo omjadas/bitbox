@@ -10,9 +10,10 @@ import java.util.Base64;
 
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
+import unimelb.bitbox.Client;
 import unimelb.bitbox.FileDescriptor;
 
-public class FileBytesResponse implements Action {
+public class FileBytesResponse extends Thread implements Action {
 
     private Socket socket;
     private static final String command = "FILE_BYTES_RESPONSE";
@@ -23,9 +24,11 @@ public class FileBytesResponse implements Action {
     private String content;
     private String message;
     private Boolean status;
+    private Client client;
+    private FileSystemManager fileSystemManager;
 
     public FileBytesResponse(Socket socket, FileDescriptor fileDescriptor, String pathName, long position, long length,
-            String content, String message, Boolean status) {
+            String content, String message, Boolean status, Client client) {
         this.socket = socket;
         this.fileDescriptor = fileDescriptor;
         this.pathName = pathName;
@@ -34,9 +37,10 @@ public class FileBytesResponse implements Action {
         this.content = content;
         this.message = message;
         this.status = status;
+        this.client = client;
     }
 
-    public FileBytesResponse(Socket socket, Document message) {
+    public FileBytesResponse(Socket socket, Document message, Client client) {
         this.socket = socket;
         this.fileDescriptor = new FileDescriptor(message);
         this.pathName = message.getString("pathName");
@@ -45,29 +49,18 @@ public class FileBytesResponse implements Action {
         this.content = message.getString("content");
         this.message = message.getString("message");
         this.status = message.getBoolean("status");
+        this.client = client;
     }
 
     @Override
     public void execute(FileSystemManager fileSystemManager) {
-        try {
-            if (fileSystemManager.writeFile(pathName, ByteBuffer.wrap(Base64.getDecoder().decode(content)), position)) {
-                if (!fileSystemManager.checkWriteComplete(pathName)) {
-                    Action bytes = new FileBytesRequest(socket, fileDescriptor, pathName, position + length,
-                            (fileDescriptor.fileSize - (position + length)) < length
-                                    ? (fileDescriptor.fileSize - (position + length))
-                                    : length);
-                    bytes.send();
-                }
-            }
-        } catch (IOException | NoSuchAlgorithmException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        this.fileSystemManager = fileSystemManager;
+        this.start();
     }
 
     @Override
-    public int compare(Action action) {
-        return 0;
+    public boolean compare(Document action) {
+        return true;
     }
 
     @Override
@@ -77,8 +70,26 @@ public class FileBytesResponse implements Action {
             out.write(toJSON());
             out.newLine();
             out.flush();
+            log.info("Sent to " + this.client.getHost() + ":" + this.client.getPort() + ": " + toJSON());
         } catch (IOException e) {
             log.info("Socket was closed while sending message");
+        }
+    }
+
+    @Override
+    public void run() {
+        try {
+            if (fileSystemManager.writeFile(pathName, ByteBuffer.wrap(Base64.getDecoder().decode(content)), position)) {
+                if (!fileSystemManager.checkWriteComplete(pathName)) {
+                    Action bytes = new FileBytesRequest(socket, fileDescriptor, pathName, position + length,
+                            (fileDescriptor.fileSize - (position + length)) < length
+                                    ? (fileDescriptor.fileSize - (position + length))
+                                    : length, client);
+                    bytes.send();
+                }
+            }
+        } catch (IOException | NoSuchAlgorithmException e) {
+            log.info("Error while writing bytes to disk");
         }
     }
 

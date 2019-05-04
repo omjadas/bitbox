@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.logging.Logger;
-
 import unimelb.bitbox.Client;
 import unimelb.bitbox.ClientSearcher;
 import unimelb.bitbox.Peer;
@@ -20,13 +18,16 @@ public class ConnectionRefused implements Action {
     private static final String command = "CONNECTION_REFUSED";
     private String message;
     private Document parsedJSON;
+    private Client client;
         
-    public ConnectionRefused(Socket socket, String message) {
+    public ConnectionRefused(Socket socket, String message, Client client) {
+        this.client = client;
         this.socket = socket;
         this.message = message;
     }
 
-    public ConnectionRefused(Socket socket, Document message) {
+    public ConnectionRefused(Socket socket, Document message, Client client) {
+        this.client = client;
         this.socket = socket;
         this.message = message.getString("message");
         this.parsedJSON = message;
@@ -42,7 +43,6 @@ public class ConnectionRefused implements Action {
             
             HostPort clientHostPort = new HostPort(host, (int) port);
             ClientSearcher.potentialClients.add(clientHostPort);
-            System.out.println(ClientSearcher.potentialClients.toString());
             synchronized(Peer.getClientSearchLock()) {
                 Peer.getClientSearchLock().notifyAll();
             }  
@@ -51,8 +51,8 @@ public class ConnectionRefused implements Action {
     }
 
     @Override
-    public int compare(Action action) {
-        return 0;
+    public boolean compare(Document message) {
+        return true;
     }
 
     @Override
@@ -62,6 +62,7 @@ public class ConnectionRefused implements Action {
             out.write(toJSON());
             out.newLine();
             out.flush();
+            log.info("Sent to " + this.client.getHost() + ":" + this.client.getPort() + ": " + toJSON());
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {}
