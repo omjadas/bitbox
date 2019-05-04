@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import unimelb.bitbox.actions.Action;
@@ -46,12 +47,12 @@ public class Client extends Thread {
     private long port;
     private FileSystemManager fileSystemManager;
     private boolean isIncomingConnection = false;
-    
+
     private Set<Action> waitingActions;
 
     public static HashMap<String, String> responseToRequest;
     public static HashSet<String> validCommandsBeforeConnectionEstablished;
-    
+
     static {
         responseToRequest = new HashMap<>();
 
@@ -69,7 +70,7 @@ public class Client extends Thread {
         validCommandsBeforeConnectionEstablished.add("CONNECTION_REFUSED");
     }
 
-    public Client(String host, int port, FileSystemManager fileSystemManager) {     
+    public Client(String host, int port, FileSystemManager fileSystemManager) {
         waitingActions = Collections.newSetFromMap(new ConcurrentHashMap<Action, Boolean>());
         this.host = host;
         this.port = port;
@@ -163,14 +164,14 @@ public class Client extends Thread {
 
         String command = message.getString("command");
 
-        if (!Client.establishedClients.contains(this)) {     
+        if (!Client.establishedClients.contains(this)) {
             if (!validCommandsBeforeConnectionEstablished.contains(command)) {
                 return false;
             }
-            
-            if (command == "HANDSHAKE_RESPONSE" || command == "CONNECTION_REFUSED") {                
+
+            if (command == "HANDSHAKE_RESPONSE" || command == "CONNECTION_REFUSED") {
                 return checkIfExpectingResponse(message);
-            } 
+            }
         } else {
             if (responseToRequest.containsKey(command)) {
                 return checkIfExpectingResponse(message);
@@ -181,7 +182,7 @@ public class Client extends Thread {
 
         return true;
     }
-    
+
     private boolean checkIfExpectingResponse(Document message) {
         for (Action action : waitingActions) {
             if (action.compare(message)) {
@@ -189,10 +190,10 @@ public class Client extends Thread {
                 return true;
             }
         }
-        
+
         return false;
     }
-    
+
     public void addToWaitingActions(Action action) {
         waitingActions.add(action);
     }
@@ -220,6 +221,11 @@ public class Client extends Thread {
             action = new DirectoryDeleteRequest(socket, fileSystemEvent.pathName, this);
         }
 
+        try {
+            TimeUnit.MILLISECONDS.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         action.send();
     }
 
@@ -283,6 +289,11 @@ public class Client extends Thread {
 
                 if (validateRequest(message)) {
                     Action action = getAction(message);
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     action.execute(fileSystemManager);
                 } else {
                     Action invalid = new InvalidProtocol(socket, "Could not validate message:" + message.toJson(), this);
