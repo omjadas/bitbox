@@ -13,7 +13,7 @@ import unimelb.bitbox.util.FileSystemManager;
 import unimelb.bitbox.Client;
 import unimelb.bitbox.FileDescriptor;
 
-public class FileBytesResponse implements Action {
+public class FileBytesResponse extends Thread implements Action {
 
     private Socket socket;
     private static final String command = "FILE_BYTES_RESPONSE";
@@ -25,6 +25,7 @@ public class FileBytesResponse implements Action {
     private String message;
     private Boolean status;
     private Client client;
+    private FileSystemManager fileSystemManager;
 
     public FileBytesResponse(Socket socket, FileDescriptor fileDescriptor, String pathName, long position, long length,
             String content, String message, Boolean status, Client client) {
@@ -53,19 +54,8 @@ public class FileBytesResponse implements Action {
 
     @Override
     public void execute(FileSystemManager fileSystemManager) {
-        try {
-            if (fileSystemManager.writeFile(pathName, ByteBuffer.wrap(Base64.getDecoder().decode(content)), position)) {
-                if (!fileSystemManager.checkWriteComplete(pathName)) {
-                    Action bytes = new FileBytesRequest(socket, fileDescriptor, pathName, position + length,
-                            (fileDescriptor.fileSize - (position + length)) < length
-                                    ? (fileDescriptor.fileSize - (position + length))
-                                    : length, client);
-                    bytes.send();
-                }
-            }
-        } catch (IOException | NoSuchAlgorithmException e) {
-            log.info("Error while writing bytes to disk");
-        }
+        this.fileSystemManager = fileSystemManager;
+        this.start();
     }
 
     @Override
@@ -83,6 +73,23 @@ public class FileBytesResponse implements Action {
             log.info("Sent to " + this.client.getHost() + ":" + this.client.getPort() + ": " + toJSON());
         } catch (IOException e) {
             log.info("Socket was closed while sending message");
+        }
+    }
+
+    @Override
+    public void run() {
+        try {
+            if (fileSystemManager.writeFile(pathName, ByteBuffer.wrap(Base64.getDecoder().decode(content)), position)) {
+                if (!fileSystemManager.checkWriteComplete(pathName)) {
+                    Action bytes = new FileBytesRequest(socket, fileDescriptor, pathName, position + length,
+                            (fileDescriptor.fileSize - (position + length)) < length
+                                    ? (fileDescriptor.fileSize - (position + length))
+                                    : length, client);
+                    bytes.send();
+                }
+            }
+        } catch (IOException | NoSuchAlgorithmException e) {
+            log.info("Error while writing bytes to disk");
         }
     }
 

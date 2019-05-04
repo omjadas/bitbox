@@ -13,7 +13,7 @@ import unimelb.bitbox.util.FileSystemManager;
 import unimelb.bitbox.Client;
 import unimelb.bitbox.FileDescriptor;
 
-public class FileBytesRequest implements Action {
+public class FileBytesRequest extends Thread implements Action {
 
     private Socket socket;
     private static final String command = "FILE_BYTES_REQUEST";
@@ -22,6 +22,7 @@ public class FileBytesRequest implements Action {
     private long position;
     private long length;
     private Client client;
+    private FileSystemManager fileSystemManager;
 
     public FileBytesRequest(Socket socket, FileDescriptor fileDescriptor, String pathName, long position, long length, Client client) {
         this.socket = socket;
@@ -43,24 +44,8 @@ public class FileBytesRequest implements Action {
 
     @Override
     public void execute(FileSystemManager fileSystemManager) {
-        String message = "";
-        String content = "";
-        Boolean status = false;
-
-        try {
-            ByteBuffer buf = fileSystemManager.readFile(fileDescriptor.md5, position, length);
-            byte[] bytes = new byte[buf.rewind().remaining()];
-            buf.get(bytes);
-            content = Base64.getEncoder().encodeToString(bytes);
-            status = true;
-            message = "successful read";
-        } catch (NoSuchAlgorithmException | IOException e) {
-            message = "unsuccessful read";
-        }
-
-        Action response = new FileBytesResponse(socket, fileDescriptor, pathName, position, length, content, message,
-                status, client);
-        response.send();
+        this.fileSystemManager = fileSystemManager;
+        this.start();
     }
 
     @Override
@@ -69,7 +54,6 @@ public class FileBytesRequest implements Action {
         if (!correctCommand) {
             return false;
         }
-        
         
         boolean matchingPath = message.getString("pathName").equals(this.pathName);
         boolean matchingFileDesc = this.fileDescriptor.compare(new FileDescriptor(message));
@@ -91,6 +75,28 @@ public class FileBytesRequest implements Action {
         } catch (IOException e) {
             log.info("Socket was closed while sending message");
         }
+    }
+
+    @Override
+    public void run() {
+        String message = "";
+        String content = "";
+        Boolean status = false;
+
+        try {
+            ByteBuffer buf = fileSystemManager.readFile(fileDescriptor.md5, position, length);
+            byte[] bytes = new byte[buf.rewind().remaining()];
+            buf.get(bytes);
+            content = Base64.getEncoder().encodeToString(bytes);
+            status = true;
+            message = "successful read";
+        } catch (NoSuchAlgorithmException | IOException e) {
+            message = "unsuccessful read";
+        }
+
+        Action response = new FileBytesResponse(socket, fileDescriptor, pathName, position, length, content, message,
+                status, client);
+        response.send();
     }
 
     /**
