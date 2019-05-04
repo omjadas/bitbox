@@ -6,7 +6,6 @@ import java.io.InputStreamReader;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -228,7 +227,7 @@ public class Client extends Thread {
      * Return an appropriate action for the received message
      * 
      * @param message The received message
-     * @return An action corresponding to the revceived message
+     * @return An action corresponding to the received message
      */
     private Action getAction(Document message) {
         Action action = null;

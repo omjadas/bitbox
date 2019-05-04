@@ -4,7 +4,6 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
-import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 
 import unimelb.bitbox.util.Configuration;
@@ -12,7 +11,6 @@ import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
 import unimelb.bitbox.Client;
 import unimelb.bitbox.FileDescriptor;
-import unimelb.bitbox.ServerMain;
 
 public class FileModifyRequest implements Action {
 
