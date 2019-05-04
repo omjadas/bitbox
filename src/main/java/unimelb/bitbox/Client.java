@@ -276,6 +276,13 @@ public class Client extends Thread {
         return action;
     }
 
+    public void printWaitingActions() {
+        System.out.println();
+        for (Action action : waitingActions) {
+            System.out.println(action.toJSON());
+        }
+    }
+
     public void run() {
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), "UTF-8"));
@@ -297,6 +304,7 @@ public class Client extends Thread {
                     action.execute(fileSystemManager);
                 } else {
                     Action invalid = new InvalidProtocol(socket, "Could not validate message:" + message.toJson(), this);
+                    printWaitingActions();
                     invalid.send();
                 }
             }

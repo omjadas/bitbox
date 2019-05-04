@@ -78,7 +78,8 @@ public class ConnectionRefused implements Action {
      * 
      * @return JSON string
      */
-    private String toJSON() {
+    @Override
+    public String toJSON() {
         Document message = new Document();
         ArrayList<Document> peers = new ArrayList<Document>();
 

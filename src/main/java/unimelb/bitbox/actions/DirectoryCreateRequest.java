@@ -78,7 +78,8 @@ public class DirectoryCreateRequest implements Action {
      * 
      * @return JSON string
      */
-    private String toJSON() {
+    @Override
+    public String toJSON() {
         Document message = new Document();
 
         message.append("command", command);

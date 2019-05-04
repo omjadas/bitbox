@@ -25,4 +25,6 @@ public interface Action {
      * Send the action to the corresponding client
      */
     public void send();
+
+    public String toJSON();
 }
