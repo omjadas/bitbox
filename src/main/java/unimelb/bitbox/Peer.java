@@ -13,7 +13,7 @@ public class Peer extends Thread {
     private static Logger log = Logger.getLogger(Peer.class.getName());
     private ServerSocket serverSocket;
     public static int maximumIncommingConnections;
-    private static Object clientSearchLock;
+    private static Object peerSearchLock;
 
     public static void main(String[] args) throws IOException, NumberFormatException, NoSuchAlgorithmException {
         System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$tc] %2$s %4$s: %5$s%n");
@@ -26,20 +26,20 @@ public class Peer extends Thread {
         Peer peer = new Peer();
         peer.start();
         ServerMain server = new ServerMain();
-        new ClientSearcher();
+        new PeerSearcher();
         
         Timer syncIntervalTimer = new Timer();
         int syncInterval = Integer.parseInt(Configuration.getConfigurationValue("syncInterval"))*1000;
         syncIntervalTimer.schedule(new GenerateSyncEventInterval(server), syncInterval, syncInterval);
     }
 
-    public static Object getClientSearchLock() {
-        return Peer.clientSearchLock;
+    public static Object getPeerSearchLock() {
+        return Peer.peerSearchLock;
     }
     
     public void run() {
         try {
-            Peer.clientSearchLock = new Object();
+            Peer.peerSearchLock = new Object();
             serverSocket = new ServerSocket(Integer.parseInt(Configuration.getConfigurationValue("port")));
 
             while (true) {

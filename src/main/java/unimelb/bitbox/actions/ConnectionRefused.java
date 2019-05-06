@@ -6,7 +6,7 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import unimelb.bitbox.RemotePeer;
-import unimelb.bitbox.ClientSearcher;
+import unimelb.bitbox.PeerSearcher;
 import unimelb.bitbox.Peer;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
@@ -42,9 +42,9 @@ public class ConnectionRefused implements Action {
             long port = hostPort.getLong("port");
             
             HostPort clientHostPort = new HostPort(host, (int) port);
-            ClientSearcher.potentialClients.add(clientHostPort);
-            synchronized(Peer.getClientSearchLock()) {
-                Peer.getClientSearchLock().notifyAll();
+            PeerSearcher.potentialClients.add(clientHostPort);
+            synchronized(Peer.getPeerSearchLock()) {
+                Peer.getPeerSearchLock().notifyAll();
             }  
         }
 

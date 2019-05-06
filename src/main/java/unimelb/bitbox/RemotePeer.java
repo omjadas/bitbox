@@ -294,8 +294,8 @@ public class RemotePeer extends Thread {
             log.info("Client " + this.host + ":" + this.port + " has disconnected");
 
             RemotePeer.establishedClients.remove(this);
-            synchronized (Peer.getClientSearchLock()) {
-                Peer.getClientSearchLock().notifyAll();
+            synchronized (Peer.getPeerSearchLock()) {
+                Peer.getPeerSearchLock().notifyAll();
             }
         } catch (IOException e) {
             System.out.println("is this triggered");

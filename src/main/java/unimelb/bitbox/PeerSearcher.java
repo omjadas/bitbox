@@ -6,19 +6,19 @@ import java.util.Queue;
 import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.HostPort;
 
-public class ClientSearcher extends Thread {
+public class PeerSearcher extends Thread {
     public static volatile Queue<HostPort> potentialClients = new LinkedList<HostPort>();
 
-    public ClientSearcher() {
-        String clientList = Configuration.getConfigurationValue("peers");
+    public PeerSearcher() {
+        String peerList = Configuration.getConfigurationValue("peers");
 
-        if (clientList.equals("")) {
+        if (peerList.equals("")) {
             return;
         }
 
-        String[] clients = clientList.split(",");
+        String[] peers = peerList.split(",");
 
-        for (String client : clients) {
+        for (String client : peers) {
             String[] clientDetails = client.split(":");
 
             HostPort clientHostPort = new HostPort(clientDetails[0], Integer.parseInt(clientDetails[1]));
@@ -30,10 +30,10 @@ public class ClientSearcher extends Thread {
 
     public synchronized void run() {
         while (!isInterrupted()) {
-            synchronized(Peer.getClientSearchLock()) {
-                while (ClientSearcher.potentialClients.size() == 0 || RemotePeer.getNumberIncomingEstablishedConnections() == Peer.maximumIncommingConnections) {
+            synchronized(Peer.getPeerSearchLock()) {
+                while (PeerSearcher.potentialClients.size() == 0 || RemotePeer.getNumberIncomingEstablishedConnections() == Peer.maximumIncommingConnections) {
                     try {
-                        Peer.getClientSearchLock().wait();
+                        Peer.getPeerSearchLock().wait();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
