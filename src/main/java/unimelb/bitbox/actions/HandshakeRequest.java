@@ -28,12 +28,12 @@ public class HandshakeRequest implements Action {
     public HandshakeRequest(Socket socket, Document message, RemotePeer remotePeer) {
         this.socket = socket;
 
-        String clientHost = ((Document) message.get("hostPort")).getString("host");
-        long clientPort = ((Document) message.get("hostPort")).getLong("port");
+        String peerHost = ((Document) message.get("hostPort")).getString("host");
+        long peerPort = ((Document) message.get("hostPort")).getLong("port");
 
         this.remotePeer = remotePeer;
-        remotePeer.setHost(clientHost);
-        remotePeer.setPort(clientPort);   
+        remotePeer.setHost(peerHost);
+        remotePeer.setPort(peerPort);   
     }
 
     @Override

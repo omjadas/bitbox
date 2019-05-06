@@ -27,11 +27,11 @@ public class HandshakeResponse implements Action {
     public HandshakeResponse(Socket socket, Document message, RemotePeer remotePeer) {
         this.socket = socket;
 
-        String clientHost = ((Document) message.get("hostPort")).getString("host");
-        long clientPort = ((Document) message.get("hostPort")).getLong("port");
+        String peerHost = ((Document) message.get("hostPort")).getString("host");
+        long peerPort = ((Document) message.get("hostPort")).getLong("port");
 
-        this.host = clientHost;
-        this.port = clientPort;
+        this.host = peerHost;
+        this.port = peerPort;
 
         this.remotePeer = remotePeer;
     }

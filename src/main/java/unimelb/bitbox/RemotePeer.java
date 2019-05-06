@@ -103,7 +103,7 @@ public class RemotePeer extends Thread {
     }
 
     /**
-     * Establish a connection with the client
+     * Establish a connection with the remote peer
      */
     public void establishConnection() {
         establishedPeers.add(this);
@@ -111,8 +111,8 @@ public class RemotePeer extends Thread {
 
     public static int getNumberIncomingEstablishedConnections() {
         int numIncoming = 0;
-        for (RemotePeer client : RemotePeer.establishedPeers) {
-            if (client.isIncomingConnection()) {
+        for (RemotePeer peer : RemotePeer.establishedPeers) {
+            if (peer.isIncomingConnection()) {
                 numIncoming++;
             }
         }
@@ -125,18 +125,18 @@ public class RemotePeer extends Thread {
     }
 
     /**
-     * Return the host of the client
+     * Return the host of the remote peer
      * 
-     * @return The host of the client
+     * @return The host of the remote peer
      */
     public String getHost() {
         return host;
     }
 
     /**
-     * Return the port of the client
+     * Return the port of the remote peer
      * 
-     * @return The port of the client
+     * @return The port of the remote peer
      */
     public long getPort() {
         return port;
@@ -291,7 +291,7 @@ public class RemotePeer extends Thread {
             }
 
         } catch (SocketException e) {
-            log.info("Client " + this.host + ":" + this.port + " has disconnected");
+            log.info("Peer " + this.host + ":" + this.port + " has disconnected");
 
             RemotePeer.establishedPeers.remove(this);
             synchronized (Peer.getPeerSearchLock()) {

@@ -41,8 +41,8 @@ public class ConnectionRefused implements Action {
             String host = hostPort.getString("host");
             long port = hostPort.getLong("port");
             
-            HostPort clientHostPort = new HostPort(host, (int) port);
-            PeerSearcher.potentialClients.add(clientHostPort);
+            HostPort peerHostPort = new HostPort(host, (int) port);
+            PeerSearcher.potentialPeers.add(peerHostPort);
             synchronized(Peer.getPeerSearchLock()) {
                 Peer.getPeerSearchLock().notifyAll();
             }  
@@ -82,10 +82,10 @@ public class ConnectionRefused implements Action {
         Document message = new Document();
         ArrayList<Document> peers = new ArrayList<Document>();
 
-        for (RemotePeer client : RemotePeer.establishedClients) {
+        for (RemotePeer remotePeer : RemotePeer.establishedPeers) {
             Document peer = new Document();
-            peer.append("host", client.getHost());
-            peer.append("port", client.getPort());
+            peer.append("host", remotePeer.getHost());
+            peer.append("port", remotePeer.getPort());
 
             peers.add(peer);
         }
