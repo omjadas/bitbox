@@ -6,7 +6,7 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
-import unimelb.bitbox.Client;
+import unimelb.bitbox.RemotePeer;
 import unimelb.bitbox.FileDescriptor;
 
 public class FileModifyResponse implements Action {
@@ -17,10 +17,10 @@ public class FileModifyResponse implements Action {
     private String pathName;
     private String message;
     private Boolean status;
-    private Client client;
+    private RemotePeer client;
 
     public FileModifyResponse(Socket socket, FileDescriptor fileDescriptor, String pathName, String message,
-            Boolean status, Client client) {
+            Boolean status, RemotePeer client) {
         this.socket = socket;
         this.fileDescriptor = fileDescriptor;
         this.pathName = pathName;
@@ -29,7 +29,7 @@ public class FileModifyResponse implements Action {
         this.client = client;
     }
 
-    public FileModifyResponse(Socket socket, Document message, Client client) {
+    public FileModifyResponse(Socket socket, Document message, RemotePeer client) {
         this.socket = socket;
         this.fileDescriptor = new FileDescriptor(message);
         this.pathName = message.getString("pathName");

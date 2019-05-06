@@ -43,7 +43,7 @@ public class Peer extends Thread {
             serverSocket = new ServerSocket(Integer.parseInt(Configuration.getConfigurationValue("port")));
 
             while (true) {
-                new Client(serverSocket.accept(), ServerMain.fileSystemManager);
+                new RemotePeer(serverSocket.accept(), ServerMain.fileSystemManager);
             }
         } catch (IOException e) {
             e.printStackTrace();

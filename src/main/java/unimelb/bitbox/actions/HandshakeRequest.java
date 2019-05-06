@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 
-import unimelb.bitbox.Client;
+import unimelb.bitbox.RemotePeer;
 import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
@@ -16,16 +16,16 @@ public class HandshakeRequest implements Action {
     private static final String command = "HANDSHAKE_REQUEST";
     private String host;
     private long port;
-    private Client client;
+    private RemotePeer client;
 
-    public HandshakeRequest(Socket socket, String host, long port, Client client) {
+    public HandshakeRequest(Socket socket, String host, long port, RemotePeer client) {
         this.socket = socket;
         this.host = host;
         this.port = port;
         this.client = client;
     }
 
-    public HandshakeRequest(Socket socket, Document message, Client client) {
+    public HandshakeRequest(Socket socket, Document message, RemotePeer client) {
         this.socket = socket;
 
         String clientHost = ((Document) message.get("hostPort")).getString("host");

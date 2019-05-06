@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 
-import unimelb.bitbox.Client;
+import unimelb.bitbox.RemotePeer;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
 
@@ -14,15 +14,15 @@ public class DirectoryCreateRequest implements Action {
     private Socket socket;
     private static final String command = "DIRECTORY_CREATE_REQUEST";
     private String pathName;
-    private Client client;
+    private RemotePeer client;
 
-    public DirectoryCreateRequest(Socket socket, String pathName, Client client) {
+    public DirectoryCreateRequest(Socket socket, String pathName, RemotePeer client) {
         this.client = client;
         this.socket = socket;
         this.pathName = pathName;
     }
 
-    public DirectoryCreateRequest(Socket socket, Document message, Client client) {
+    public DirectoryCreateRequest(Socket socket, Document message, RemotePeer client) {
         this.client = client;
         this.socket = socket;
         this.pathName = message.getString("pathName");

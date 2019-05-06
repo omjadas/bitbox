@@ -9,7 +9,7 @@ import java.security.NoSuchAlgorithmException;
 import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
-import unimelb.bitbox.Client;
+import unimelb.bitbox.RemotePeer;
 import unimelb.bitbox.FileDescriptor;
 
 public class FileModifyRequest implements Action {
@@ -18,16 +18,16 @@ public class FileModifyRequest implements Action {
     private static String command = "FILE_MODIFY_REQUEST";
     private FileDescriptor fileDescriptor;
     private String pathName;
-    private Client client;
+    private RemotePeer client;
 
-    public FileModifyRequest(Socket socket, FileDescriptor fileDescriptor, String pathName, Client client) {
+    public FileModifyRequest(Socket socket, FileDescriptor fileDescriptor, String pathName, RemotePeer client) {
         this.socket = socket;
         this.fileDescriptor = fileDescriptor;
         this.pathName = pathName;
         this.client = client;
     }
 
-    public FileModifyRequest(Socket socket, Document message, Client client) {
+    public FileModifyRequest(Socket socket, Document message, RemotePeer client) {
         this.socket = socket;
         this.fileDescriptor = new FileDescriptor(message);
         this.pathName = message.getString("pathName");

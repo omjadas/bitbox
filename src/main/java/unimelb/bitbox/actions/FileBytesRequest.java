@@ -10,7 +10,7 @@ import java.util.Base64;
 
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
-import unimelb.bitbox.Client;
+import unimelb.bitbox.RemotePeer;
 import unimelb.bitbox.FileDescriptor;
 
 public class FileBytesRequest extends Thread implements Action {
@@ -21,10 +21,10 @@ public class FileBytesRequest extends Thread implements Action {
     private String pathName;
     private long position;
     private long length;
-    private Client client;
+    private RemotePeer client;
     private FileSystemManager fileSystemManager;
 
-    public FileBytesRequest(Socket socket, FileDescriptor fileDescriptor, String pathName, long position, long length, Client client) {
+    public FileBytesRequest(Socket socket, FileDescriptor fileDescriptor, String pathName, long position, long length, RemotePeer client) {
         this.socket = socket;
         this.fileDescriptor = fileDescriptor;
         this.pathName = pathName;
@@ -33,7 +33,7 @@ public class FileBytesRequest extends Thread implements Action {
         this.client = client;
     }
 
-    public FileBytesRequest(Socket socket, Document message, Client client) {
+    public FileBytesRequest(Socket socket, Document message, RemotePeer client) {
         this.socket = socket;
         this.fileDescriptor = new FileDescriptor(message);
         this.pathName = message.getString("pathName");

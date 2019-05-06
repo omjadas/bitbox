@@ -6,7 +6,7 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
-import unimelb.bitbox.Client;
+import unimelb.bitbox.RemotePeer;
 import unimelb.bitbox.FileDescriptor;
 
 public class FileDeleteRequest implements Action {
@@ -15,16 +15,16 @@ public class FileDeleteRequest implements Action {
     private static final String command = "FILE_DELETE_REQUEST";
     private FileDescriptor fileDescriptor;
     private String pathName;
-    private Client client;
+    private RemotePeer client;
 
-    public FileDeleteRequest(Socket socket, FileDescriptor fileDescriptor, String pathName, Client client) {
+    public FileDeleteRequest(Socket socket, FileDescriptor fileDescriptor, String pathName, RemotePeer client) {
         this.socket = socket;
         this.fileDescriptor = fileDescriptor;
         this.pathName = pathName;
         this.client = client;
     }
 
-    public FileDeleteRequest(Socket socket, Document message, Client client) {
+    public FileDeleteRequest(Socket socket, Document message, RemotePeer client) {
         this.socket = socket;
         this.fileDescriptor = new FileDescriptor(message);
         this.pathName = message.getString("pathName");

@@ -9,7 +9,7 @@ import java.security.NoSuchAlgorithmException;
 import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
-import unimelb.bitbox.Client;
+import unimelb.bitbox.RemotePeer;
 import unimelb.bitbox.FileDescriptor;
 
 public class FileCreateRequest implements Action {
@@ -18,16 +18,16 @@ public class FileCreateRequest implements Action {
     private static final String command = "FILE_CREATE_REQUEST";
     private FileDescriptor fileDescriptor;
     private String pathName;
-    private Client client;
+    private RemotePeer client;
 
-    public FileCreateRequest(Socket socket, FileDescriptor fileDescriptor, String pathName, Client client) {
+    public FileCreateRequest(Socket socket, FileDescriptor fileDescriptor, String pathName, RemotePeer client) {
         this.socket = socket;
         this.fileDescriptor = fileDescriptor;
         this.pathName = pathName;
         this.client = client;
     }
 
-    public FileCreateRequest(Socket socket, Document message, Client client) {
+    public FileCreateRequest(Socket socket, Document message, RemotePeer client) {
         this.socket = socket;
         this.fileDescriptor = new FileDescriptor(message);
         this.pathName = message.getString("pathName");

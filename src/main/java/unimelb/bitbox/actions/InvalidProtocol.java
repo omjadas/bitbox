@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 
-import unimelb.bitbox.Client;
+import unimelb.bitbox.RemotePeer;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
 
@@ -14,15 +14,15 @@ public class InvalidProtocol implements Action {
     private Socket socket;
     private static final String command = "INVALID_PROTOCOL";
     private String message;
-    private Client client;
+    private RemotePeer client;
 
-    public InvalidProtocol(Socket socket, String message, Client client) {
+    public InvalidProtocol(Socket socket, String message, RemotePeer client) {
         this.socket = socket;
         this.message = message;
         this.client = client;
     }
 
-    public InvalidProtocol(Socket socket, Document message, Client client) {
+    public InvalidProtocol(Socket socket, Document message, RemotePeer client) {
         this.socket = socket;
         this.message = message.getString("message");
         this.client = client;

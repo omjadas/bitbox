@@ -31,7 +31,7 @@ public class ClientSearcher extends Thread {
     public synchronized void run() {
         while (!isInterrupted()) {
             synchronized(Peer.getClientSearchLock()) {
-                while (ClientSearcher.potentialClients.size() == 0 || Client.getNumberIncomingEstablishedConnections() == Peer.maximumIncommingConnections) {
+                while (ClientSearcher.potentialClients.size() == 0 || RemotePeer.getNumberIncomingEstablishedConnections() == Peer.maximumIncommingConnections) {
                     try {
                         Peer.getClientSearchLock().wait();
                     } catch (InterruptedException e) {
@@ -41,7 +41,7 @@ public class ClientSearcher extends Thread {
             }           
 
             HostPort potentialClient = potentialClients.remove();
-            new Client(potentialClient.host, potentialClient.port, ServerMain.fileSystemManager);
+            new RemotePeer(potentialClient.host, potentialClient.port, ServerMain.fileSystemManager);
         }
     }
 }

@@ -23,7 +23,7 @@ public class ServerMain implements FileSystemObserver {
 
     @Override
     public void processFileSystemEvent(FileSystemEvent fileSystemEvent) {
-        for (Client client : Client.establishedClients) {
+        for (RemotePeer client : RemotePeer.establishedClients) {
             client.processEvent(fileSystemEvent);
         }
     }

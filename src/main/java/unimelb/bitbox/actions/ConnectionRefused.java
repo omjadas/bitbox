@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.ArrayList;
-import unimelb.bitbox.Client;
+import unimelb.bitbox.RemotePeer;
 import unimelb.bitbox.ClientSearcher;
 import unimelb.bitbox.Peer;
 import unimelb.bitbox.util.Document;
@@ -18,15 +18,15 @@ public class ConnectionRefused implements Action {
     private static final String command = "CONNECTION_REFUSED";
     private String message;
     private Document parsedJSON;
-    private Client client;
+    private RemotePeer client;
         
-    public ConnectionRefused(Socket socket, String message, Client client) {
+    public ConnectionRefused(Socket socket, String message, RemotePeer client) {
         this.client = client;
         this.socket = socket;
         this.message = message;
     }
 
-    public ConnectionRefused(Socket socket, Document message, Client client) {
+    public ConnectionRefused(Socket socket, Document message, RemotePeer client) {
         this.client = client;
         this.socket = socket;
         this.message = message.getString("message");
@@ -82,7 +82,7 @@ public class ConnectionRefused implements Action {
         Document message = new Document();
         ArrayList<Document> peers = new ArrayList<Document>();
 
-        for (Client client : Client.establishedClients) {
+        for (RemotePeer client : RemotePeer.establishedClients) {
             Document peer = new Document();
             peer.append("host", client.getHost());
             peer.append("port", client.getPort());
