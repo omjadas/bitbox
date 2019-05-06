@@ -40,7 +40,7 @@ import unimelb.bitbox.FileDescriptor;
 
 public class RemotePeer extends Thread {
     private static Logger log = Logger.getLogger(RemotePeer.class.getName());
-    public static Set<RemotePeer> establishedClients = Collections.newSetFromMap(new ConcurrentHashMap<RemotePeer, Boolean>());
+    public static Set<RemotePeer> establishedPeers = Collections.newSetFromMap(new ConcurrentHashMap<RemotePeer, Boolean>());
     private Socket socket;
     private String host;
     private long port;
@@ -106,12 +106,12 @@ public class RemotePeer extends Thread {
      * Establish a connection with the client
      */
     public void establishConnection() {
-        establishedClients.add(this);
+        establishedPeers.add(this);
     }
 
     public static int getNumberIncomingEstablishedConnections() {
         int numIncoming = 0;
-        for (RemotePeer client : RemotePeer.establishedClients) {
+        for (RemotePeer client : RemotePeer.establishedPeers) {
             if (client.isIncomingConnection()) {
                 numIncoming++;
             }
@@ -163,7 +163,7 @@ public class RemotePeer extends Thread {
 
         String command = message.getString("command");
 
-        if (!RemotePeer.establishedClients.contains(this)) {     
+        if (!RemotePeer.establishedPeers.contains(this)) {     
             if (!validCommandsBeforeConnectionEstablished.contains(command)) {
                 return false;
             }
@@ -293,7 +293,7 @@ public class RemotePeer extends Thread {
         } catch (SocketException e) {
             log.info("Client " + this.host + ":" + this.port + " has disconnected");
 
-            RemotePeer.establishedClients.remove(this);
+            RemotePeer.establishedPeers.remove(this);
             synchronized (Peer.getPeerSearchLock()) {
                 Peer.getPeerSearchLock().notifyAll();
             }
