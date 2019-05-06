@@ -14,18 +14,18 @@ public class DirectoryDeleteRequest implements Action {
     private Socket socket;
     private static final String command = "DIRECTORY_DELETE_REQUEST";
     private String pathName;
-    private RemotePeer client;
+    private RemotePeer remotePeer;
 
-    public DirectoryDeleteRequest(Socket socket, String pathName, RemotePeer client) {
+    public DirectoryDeleteRequest(Socket socket, String pathName, RemotePeer remotePeer) {
         this.socket = socket;
         this.pathName = pathName;
-        this.client = client;
+        this.remotePeer = remotePeer;
     }
 
-    public DirectoryDeleteRequest(Socket socket, Document message, RemotePeer client) {
+    public DirectoryDeleteRequest(Socket socket, Document message, RemotePeer remotePeer) {
         this.socket = socket;
         this.pathName = message.getString("pathName");
-        this.client = client;
+        this.remotePeer = remotePeer;
     }
 
     @Override
@@ -43,7 +43,7 @@ public class DirectoryDeleteRequest implements Action {
             message = "there was problem deleting directory";
         }
 
-        Action response = new DirectoryDeleteResponse(socket, pathName, message, status, client);
+        Action response = new DirectoryDeleteResponse(socket, pathName, message, status, remotePeer);
         response.send();
     }
 
@@ -66,8 +66,8 @@ public class DirectoryDeleteRequest implements Action {
             out.write(toJSON());
             out.newLine();
             out.flush();
-            log.info("Sent to " + this.client.getHost() + ":" + this.client.getPort() + ": " + toJSON());
-            this.client.addToWaitingActions(this);
+            log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
+            this.remotePeer.addToWaitingActions(this);
         } catch (IOException e) {
             log.info("Socket was closed while sending message");
         }

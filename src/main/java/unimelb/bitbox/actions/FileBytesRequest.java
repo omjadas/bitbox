@@ -21,25 +21,25 @@ public class FileBytesRequest extends Thread implements Action {
     private String pathName;
     private long position;
     private long length;
-    private RemotePeer client;
+    private RemotePeer remotePeer;
     private FileSystemManager fileSystemManager;
 
-    public FileBytesRequest(Socket socket, FileDescriptor fileDescriptor, String pathName, long position, long length, RemotePeer client) {
+    public FileBytesRequest(Socket socket, FileDescriptor fileDescriptor, String pathName, long position, long length, RemotePeer remotePeer) {
         this.socket = socket;
         this.fileDescriptor = fileDescriptor;
         this.pathName = pathName;
         this.position = position;
         this.length = length;
-        this.client = client;
+        this.remotePeer = remotePeer;
     }
 
-    public FileBytesRequest(Socket socket, Document message, RemotePeer client) {
+    public FileBytesRequest(Socket socket, Document message, RemotePeer remotePeer) {
         this.socket = socket;
         this.fileDescriptor = new FileDescriptor(message);
         this.pathName = message.getString("pathName");
         this.position = message.getLong("position");
         this.length = message.getLong("length");
-        this.client = client;
+        this.remotePeer = remotePeer;
     }
 
     @Override
@@ -70,8 +70,8 @@ public class FileBytesRequest extends Thread implements Action {
             out.write(toJSON());
             out.newLine();
             out.flush();
-            log.info("Sent to " + this.client.getHost() + ":" + this.client.getPort() + ": " + toJSON());
-            this.client.addToWaitingActions(this);
+            log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
+            this.remotePeer.addToWaitingActions(this);
         } catch (IOException e) {
             log.info("Socket was closed while sending message");
         }
@@ -95,7 +95,7 @@ public class FileBytesRequest extends Thread implements Action {
         }
 
         Action response = new FileBytesResponse(socket, fileDescriptor, pathName, position, length, content, message,
-                status, client);
+                status, remotePeer);
         response.send();
     }
 

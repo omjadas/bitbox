@@ -18,20 +18,20 @@ public class FileCreateRequest implements Action {
     private static final String command = "FILE_CREATE_REQUEST";
     private FileDescriptor fileDescriptor;
     private String pathName;
-    private RemotePeer client;
+    private RemotePeer remotePeer;
 
-    public FileCreateRequest(Socket socket, FileDescriptor fileDescriptor, String pathName, RemotePeer client) {
+    public FileCreateRequest(Socket socket, FileDescriptor fileDescriptor, String pathName, RemotePeer remotePeer) {
         this.socket = socket;
         this.fileDescriptor = fileDescriptor;
         this.pathName = pathName;
-        this.client = client;
+        this.remotePeer = remotePeer;
     }
 
-    public FileCreateRequest(Socket socket, Document message, RemotePeer client) {
+    public FileCreateRequest(Socket socket, Document message, RemotePeer remotePeer) {
         this.socket = socket;
         this.fileDescriptor = new FileDescriptor(message);
         this.pathName = message.getString("pathName");
-        this.client = client;
+        this.remotePeer = remotePeer;
     }
 
     @Override
@@ -55,7 +55,7 @@ public class FileCreateRequest implements Action {
                 message = "there was a problem creating the file";
             }
 
-        Action response = new FileCreateResponse(socket, fileDescriptor, pathName, message, status, client);
+        Action response = new FileCreateResponse(socket, fileDescriptor, pathName, message, status, remotePeer);
         response.send();
 
         if (status) {
@@ -63,13 +63,13 @@ public class FileCreateRequest implements Action {
                 if (!fileSystemManager.checkShortcut(pathName)) {
                     int blockSize = Integer.parseInt(Configuration.getConfigurationValue("blockSize"));
                     Action bytes = new FileBytesRequest(socket, fileDescriptor, pathName, 0,
-                            fileDescriptor.fileSize < blockSize ? fileDescriptor.fileSize : blockSize, client);
+                            fileDescriptor.fileSize < blockSize ? fileDescriptor.fileSize : blockSize, remotePeer);
                     bytes.send();
                 }
             } catch (NumberFormatException | NoSuchAlgorithmException | IOException e) {
                 int blockSize = Integer.parseInt(Configuration.getConfigurationValue("blockSize"));
                 Action bytes = new FileBytesRequest(socket, fileDescriptor, pathName, 0,
-                        fileDescriptor.fileSize < blockSize ? fileDescriptor.fileSize : blockSize, client);
+                        fileDescriptor.fileSize < blockSize ? fileDescriptor.fileSize : blockSize, remotePeer);
                 bytes.send();
             }
         }
@@ -95,8 +95,8 @@ public class FileCreateRequest implements Action {
             out.write(toJSON());
             out.newLine();
             out.flush();
-            log.info("Sent to " + this.client.getHost() + ":" + this.client.getPort() + ": " + toJSON());
-            this.client.addToWaitingActions(this);
+            log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
+            this.remotePeer.addToWaitingActions(this);
         } catch (IOException e) {
             log.info("Socket was closed while sending message");
         }

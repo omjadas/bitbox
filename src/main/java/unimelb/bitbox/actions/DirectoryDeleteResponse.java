@@ -16,22 +16,22 @@ public class DirectoryDeleteResponse implements Action {
     private String pathName;
     private String message;
     private Boolean status;
-    private RemotePeer client;
+    private RemotePeer remotePeer;
 
-    public DirectoryDeleteResponse(Socket socket, String pathName, String message, Boolean status, RemotePeer client) {
+    public DirectoryDeleteResponse(Socket socket, String pathName, String message, Boolean status, RemotePeer remotePeer) {
         this.socket = socket;
         this.pathName = pathName;
         this.message = message;
         this.status = status;
-        this.client = client;
+        this.remotePeer = remotePeer;
     }
 
-    public DirectoryDeleteResponse(Socket socket, Document message, RemotePeer client) {
+    public DirectoryDeleteResponse(Socket socket, Document message, RemotePeer remotePeer) {
         this.socket = socket;
         this.pathName = message.getString("pathName");
         this.message = message.getString("message");
         this.status = message.getBoolean("status");
-        this.client = client;
+        this.remotePeer = remotePeer;
     }
 
     @Override
@@ -51,7 +51,7 @@ public class DirectoryDeleteResponse implements Action {
             out.write(toJSON());
             out.newLine();
             out.flush();
-            log.info("Sent to " + this.client.getHost() + ":" + this.client.getPort() + ": " + toJSON());
+            log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
         } catch (IOException e) {
             log.info("Socket was closed while sending message");
         }

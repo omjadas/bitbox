@@ -16,33 +16,33 @@ public class HandshakeRequest implements Action {
     private static final String command = "HANDSHAKE_REQUEST";
     private String host;
     private long port;
-    private RemotePeer client;
+    private RemotePeer remotePeer;
 
-    public HandshakeRequest(Socket socket, String host, long port, RemotePeer client) {
+    public HandshakeRequest(Socket socket, String host, long port, RemotePeer remotePeer) {
         this.socket = socket;
         this.host = host;
         this.port = port;
-        this.client = client;
+        this.remotePeer = remotePeer;
     }
 
-    public HandshakeRequest(Socket socket, Document message, RemotePeer client) {
+    public HandshakeRequest(Socket socket, Document message, RemotePeer remotePeer) {
         this.socket = socket;
 
         String clientHost = ((Document) message.get("hostPort")).getString("host");
         long clientPort = ((Document) message.get("hostPort")).getLong("port");
 
-        this.client = client;
-        client.setHost(clientHost);
-        client.setPort(clientPort);   
+        this.remotePeer = remotePeer;
+        remotePeer.setHost(clientHost);
+        remotePeer.setPort(clientPort);   
     }
 
     @Override
     public void execute(FileSystemManager fileSystemManager) {
         Action response;
         response = new HandshakeResponse(socket, Configuration.getConfigurationValue("advertisedName"),
-                Long.parseLong(Configuration.getConfigurationValue("port")), this.client);
+                Long.parseLong(Configuration.getConfigurationValue("port")), this.remotePeer);
         response.send();
-        client.establishConnection();
+        remotePeer.establishConnection();
     }
 
     @Override
@@ -57,8 +57,8 @@ public class HandshakeRequest implements Action {
             out.write(toJSON());
             out.newLine();
             out.flush();
-            log.info("Sent to " + this.client.getHost() + ":" + this.client.getPort() + ": " + toJSON());
-            this.client.addToWaitingActions(this);
+            log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
+            this.remotePeer.addToWaitingActions(this);
         } catch (IOException e) {
             log.info("Socket was closed while sending message");
         }

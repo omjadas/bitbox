@@ -17,25 +17,25 @@ public class FileDeleteResponse implements Action {
     private String pathName;
     private String message;
     private Boolean status;
-    private RemotePeer client;
+    private RemotePeer remotePeer;
     
     public FileDeleteResponse(Socket socket, FileDescriptor fileDescriptor, String pathName, String message,
-            Boolean status, RemotePeer client) {
+            Boolean status, RemotePeer remotePeer) {
         this.socket = socket;
         this.fileDescriptor = fileDescriptor;
         this.pathName = pathName;
         this.message = message;
         this.status = status;
-        this.client = client;
+        this.remotePeer = remotePeer;
     }
 
-    public FileDeleteResponse(Socket socket, Document message, RemotePeer client) {
+    public FileDeleteResponse(Socket socket, Document message, RemotePeer remotePeer) {
         this.socket = socket;
         this.fileDescriptor = new FileDescriptor(message);
         this.pathName = message.getString("pathName");
         this.message = message.getString("message");
         this.status = message.getBoolean("status");
-        this.client = client;
+        this.remotePeer = remotePeer;
     }
 
     @Override
@@ -55,7 +55,7 @@ public class FileDeleteResponse implements Action {
             out.write(toJSON());
             out.newLine();
             out.flush();
-            log.info("Sent to " + this.client.getHost() + ":" + this.client.getPort() + ": " + toJSON());
+            log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
         } catch (IOException e) {
             log.info("Socket was closed while sending message");
         }

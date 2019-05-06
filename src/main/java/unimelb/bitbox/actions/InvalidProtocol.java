@@ -14,18 +14,18 @@ public class InvalidProtocol implements Action {
     private Socket socket;
     private static final String command = "INVALID_PROTOCOL";
     private String message;
-    private RemotePeer client;
+    private RemotePeer remotePeer;
 
-    public InvalidProtocol(Socket socket, String message, RemotePeer client) {
+    public InvalidProtocol(Socket socket, String message, RemotePeer remotePeer) {
         this.socket = socket;
         this.message = message;
-        this.client = client;
+        this.remotePeer = remotePeer;
     }
 
-    public InvalidProtocol(Socket socket, Document message, RemotePeer client) {
+    public InvalidProtocol(Socket socket, Document message, RemotePeer remotePeer) {
         this.socket = socket;
         this.message = message.getString("message");
-        this.client = client;
+        this.remotePeer = remotePeer;
     }
 
     @Override
@@ -45,7 +45,7 @@ public class InvalidProtocol implements Action {
             out.write(toJSON());
             out.newLine();
             out.flush();
-            log.info("Sent to " + this.client.getHost() + ":" + this.client.getPort() + ": " + toJSON());
+            log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {}

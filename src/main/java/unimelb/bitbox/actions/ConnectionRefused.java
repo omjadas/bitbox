@@ -18,16 +18,16 @@ public class ConnectionRefused implements Action {
     private static final String command = "CONNECTION_REFUSED";
     private String message;
     private Document parsedJSON;
-    private RemotePeer client;
+    private RemotePeer remotePeer;
         
-    public ConnectionRefused(Socket socket, String message, RemotePeer client) {
-        this.client = client;
+    public ConnectionRefused(Socket socket, String message, RemotePeer remotePeer) {
+        this.remotePeer = remotePeer;
         this.socket = socket;
         this.message = message;
     }
 
-    public ConnectionRefused(Socket socket, Document message, RemotePeer client) {
-        this.client = client;
+    public ConnectionRefused(Socket socket, Document message, RemotePeer remotePeer) {
+        this.remotePeer = remotePeer;
         this.socket = socket;
         this.message = message.getString("message");
         this.parsedJSON = message;
@@ -62,7 +62,7 @@ public class ConnectionRefused implements Action {
             out.write(toJSON());
             out.newLine();
             out.flush();
-            log.info("Sent to " + this.client.getHost() + ":" + this.client.getPort() + ": " + toJSON());
+            log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {}

@@ -15,16 +15,16 @@ public class HandshakeResponse implements Action {
     private static final String command = "HANDSHAKE_RESPONSE";
     private String host;
     private long port;
-    private RemotePeer client;
+    private RemotePeer remotePeer;
 
-    public HandshakeResponse(Socket socket, String host, long port, RemotePeer client) {
+    public HandshakeResponse(Socket socket, String host, long port, RemotePeer remotePeer) {
         this.socket = socket;
         this.host = host;
         this.port = port;
-        this.client = client;
+        this.remotePeer = remotePeer;
     }
 
-    public HandshakeResponse(Socket socket, Document message, RemotePeer client) {
+    public HandshakeResponse(Socket socket, Document message, RemotePeer remotePeer) {
         this.socket = socket;
 
         String clientHost = ((Document) message.get("hostPort")).getString("host");
@@ -33,12 +33,12 @@ public class HandshakeResponse implements Action {
         this.host = clientHost;
         this.port = clientPort;
 
-        this.client = client;
+        this.remotePeer = remotePeer;
     }
 
     @Override
     public void execute(FileSystemManager fileSystemManager) {
-        client.establishConnection();
+        remotePeer.establishConnection();
     }
 
     @Override
@@ -53,7 +53,7 @@ public class HandshakeResponse implements Action {
             out.write(toJSON());
             out.newLine();
             out.flush();
-            log.info("Sent to " + this.client.getHost() + ":" + this.client.getPort() + ": " + toJSON());
+            log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
         } catch (IOException e) {
             log.info("Socket was closed while sending message");
         }
