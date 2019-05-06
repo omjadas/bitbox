@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.ArrayList;
-import unimelb.bitbox.Client;
-import unimelb.bitbox.ClientSearcher;
+import unimelb.bitbox.RemotePeer;
+import unimelb.bitbox.PeerSearcher;
 import unimelb.bitbox.Peer;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
@@ -18,16 +18,16 @@ public class ConnectionRefused implements Action {
     private static final String command = "CONNECTION_REFUSED";
     private String message;
     private Document parsedJSON;
-    private Client client;
+    private RemotePeer remotePeer;
         
-    public ConnectionRefused(Socket socket, String message, Client client) {
-        this.client = client;
+    public ConnectionRefused(Socket socket, String message, RemotePeer remotePeer) {
+        this.remotePeer = remotePeer;
         this.socket = socket;
         this.message = message;
     }
 
-    public ConnectionRefused(Socket socket, Document message, Client client) {
-        this.client = client;
+    public ConnectionRefused(Socket socket, Document message, RemotePeer remotePeer) {
+        this.remotePeer = remotePeer;
         this.socket = socket;
         this.message = message.getString("message");
         this.parsedJSON = message;
@@ -41,10 +41,10 @@ public class ConnectionRefused implements Action {
             String host = hostPort.getString("host");
             long port = hostPort.getLong("port");
             
-            HostPort clientHostPort = new HostPort(host, (int) port);
-            ClientSearcher.potentialClients.add(clientHostPort);
-            synchronized(Peer.getClientSearchLock()) {
-                Peer.getClientSearchLock().notifyAll();
+            HostPort peerHostPort = new HostPort(host, (int) port);
+            PeerSearcher.potentialPeers.add(peerHostPort);
+            synchronized(Peer.getPeerSearchLock()) {
+                Peer.getPeerSearchLock().notifyAll();
             }  
         }
 
@@ -62,7 +62,7 @@ public class ConnectionRefused implements Action {
             out.write(toJSON());
             out.newLine();
             out.flush();
-            log.info("Sent to " + this.client.getHost() + ":" + this.client.getPort() + ": " + toJSON());
+            log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {}
@@ -82,10 +82,10 @@ public class ConnectionRefused implements Action {
         Document message = new Document();
         ArrayList<Document> peers = new ArrayList<Document>();
 
-        for (Client client : Client.establishedClients) {
+        for (RemotePeer remotePeer : RemotePeer.establishedPeers) {
             Document peer = new Document();
-            peer.append("host", client.getHost());
-            peer.append("port", client.getPort());
+            peer.append("host", remotePeer.getHost());
+            peer.append("port", remotePeer.getPort());
 
             peers.add(peer);
         }
