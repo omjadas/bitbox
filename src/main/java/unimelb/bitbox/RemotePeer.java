@@ -38,9 +38,9 @@ import unimelb.bitbox.util.FileSystemManager.FileSystemEvent;
 import unimelb.bitbox.util.SchemaValidator;
 import unimelb.bitbox.FileDescriptor;
 
-public class Client extends Thread {
-    private static Logger log = Logger.getLogger(Client.class.getName());
-    public static Set<Client> establishedClients = Collections.newSetFromMap(new ConcurrentHashMap<Client, Boolean>());
+public class RemotePeer extends Thread {
+    private static Logger log = Logger.getLogger(RemotePeer.class.getName());
+    public static Set<RemotePeer> establishedPeers = Collections.newSetFromMap(new ConcurrentHashMap<RemotePeer, Boolean>());
     private Socket socket;
     private String host;
     private long port;
@@ -70,7 +70,7 @@ public class Client extends Thread {
         validCommandsBeforeConnectionEstablished.add("CONNECTION_REFUSED");
     }
 
-    public Client(String host, int port, FileSystemManager fileSystemManager) {     
+    public RemotePeer(String host, int port, FileSystemManager fileSystemManager) {     
         waitingActions = Collections.newSetFromMap(new ConcurrentHashMap<Action, Boolean>());
         this.host = host;
         this.port = port;
@@ -90,12 +90,12 @@ public class Client extends Thread {
     }
     
 
-    public Client(Socket socket, FileSystemManager fileSystemManager) {
+    public RemotePeer(Socket socket, FileSystemManager fileSystemManager) {
         waitingActions = Collections.newSetFromMap(new ConcurrentHashMap<Action, Boolean>());
         this.socket = socket;
         this.fileSystemManager = fileSystemManager;
 
-        if (Client.getNumberIncomingEstablishedConnections() == Peer.maximumIncommingConnections) {
+        if (RemotePeer.getNumberIncomingEstablishedConnections() == Peer.maximumIncommingConnections) {
             new ConnectionRefused(socket, "connection limit reached", this).send();
             return;
         }
@@ -105,16 +105,16 @@ public class Client extends Thread {
     }
 
     /**
-     * Establish a connection with the client
+     * Establish a connection with the remote peer
      */
     public void establishConnection() {
-        establishedClients.add(this);
+        establishedPeers.add(this);
     }
 
     public static int getNumberIncomingEstablishedConnections() {
         int numIncoming = 0;
-        for (Client client : Client.establishedClients) {
-            if (client.isIncomingConnection()) {
+        for (RemotePeer peer : RemotePeer.establishedPeers) {
+            if (peer.isIncomingConnection()) {
                 numIncoming++;
             }
         }
@@ -127,18 +127,18 @@ public class Client extends Thread {
     }
 
     /**
-     * Return the host of the client
+     * Return the host of the remote peer
      * 
-     * @return The host of the client
+     * @return The host of the remote peer
      */
     public String getHost() {
         return host;
     }
 
     /**
-     * Return the port of the client
+     * Return the port of the remote peer
      * 
-     * @return The port of the client
+     * @return The port of the remote peer
      */
     public long getPort() {
         return port;
@@ -165,7 +165,7 @@ public class Client extends Thread {
 
         String command = message.getString("command");
 
-        if (!Client.establishedClients.contains(this)) {     
+        if (!RemotePeer.establishedPeers.contains(this)) {     
             if (!validCommandsBeforeConnectionEstablished.contains(command)) {
                 return false;
             }
@@ -293,11 +293,11 @@ public class Client extends Thread {
             }
 
         } catch (SocketException e) {
-            log.info("Client " + this.host + ":" + this.port + " has disconnected");
+            log.info("Peer " + this.host + ":" + this.port + " has disconnected");
 
-            Client.establishedClients.remove(this);
-            synchronized (Peer.getClientSearchLock()) {
-                Peer.getClientSearchLock().notifyAll();
+            RemotePeer.establishedPeers.remove(this);
+            synchronized (Peer.getPeerSearchLock()) {
+                Peer.getPeerSearchLock().notifyAll();
             }
         } catch (IOException e) {
             System.out.println("is this triggered");

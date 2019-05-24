@@ -22,7 +22,7 @@ public interface Action {
     public boolean compare(Document message);
 
     /**
-     * Send the action to the corresponding client
+     * Send the action to the corresponding peer
      */
     public void send();
 }

@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 
-import unimelb.bitbox.Client;
+import unimelb.bitbox.RemotePeer;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
 
@@ -15,30 +15,30 @@ public class HandshakeResponse implements Action {
     private static final String command = "HANDSHAKE_RESPONSE";
     private String host;
     private long port;
-    private Client client;
+    private RemotePeer remotePeer;
 
-    public HandshakeResponse(Socket socket, String host, long port, Client client) {
+    public HandshakeResponse(Socket socket, String host, long port, RemotePeer remotePeer) {
         this.socket = socket;
         this.host = host;
         this.port = port;
-        this.client = client;
+        this.remotePeer = remotePeer;
     }
 
-    public HandshakeResponse(Socket socket, Document message, Client client) {
+    public HandshakeResponse(Socket socket, Document message, RemotePeer remotePeer) {
         this.socket = socket;
 
-        String clientHost = ((Document) message.get("hostPort")).getString("host");
-        long clientPort = ((Document) message.get("hostPort")).getLong("port");
+        String peerHost = ((Document) message.get("hostPort")).getString("host");
+        long peerPort = ((Document) message.get("hostPort")).getLong("port");
 
-        this.host = clientHost;
-        this.port = clientPort;
+        this.host = peerHost;
+        this.port = peerPort;
 
-        this.client = client;
+        this.remotePeer = remotePeer;
     }
 
     @Override
     public void execute(FileSystemManager fileSystemManager) {
-        client.establishConnection();
+        remotePeer.establishConnection();
     }
 
     @Override
@@ -53,7 +53,7 @@ public class HandshakeResponse implements Action {
             out.write(toJSON());
             out.newLine();
             out.flush();
-            log.info("Sent to " + this.client.getHost() + ":" + this.client.getPort() + ": " + toJSON());
+            log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
         } catch (IOException e) {
             log.info("Socket was closed while sending message");
         }
