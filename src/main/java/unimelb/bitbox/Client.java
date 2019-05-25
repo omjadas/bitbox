@@ -17,25 +17,16 @@ public class Client {
             //Parse the arguments
             parser.parseArgument(args);
             
+            //Get command, server and server port
             String command = argsBean.getCommand();
             String server = argsBean.getServer();
             int serverPort = argsBean.getServerPort();
             
-            //After parsing, the fields in argsBean have been updated with the given
-            //command line arguments
             
-            System.out.println("Command: " + command);
-            System.out.println("Server: " + server);
-            System.out.println("Server Port: " + serverPort);
-           
             if (!command.equals("list_peers")) {
-                
+                //Get peer and peer port
                 String peer = argsBean.getPeer();
                 int peerPort = argsBean.getPeerPort();
-                
-                System.out.println("Peer: " + peer);
-                System.out.println("Peer Port: " + peerPort);
-            
             }
             
         } catch (CmdLineException e) {
