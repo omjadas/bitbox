@@ -22,11 +22,11 @@ public class Client {
             String server = argsBean.getServer();
             int serverPort = argsBean.getServerPort();
             
-            
             if (!command.equals("list_peers")) {
                 //Get peer and peer port
                 String peer = argsBean.getPeer();
                 int peerPort = argsBean.getPeerPort();
+            
             }
             
         } catch (CmdLineException e) {
