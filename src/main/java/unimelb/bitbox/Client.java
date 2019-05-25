@@ -21,8 +21,6 @@ public class Client {
             String server = argsBean.getServer();
             int serverPort = argsBean.getServerPort();
             
-             
-            
             //After parsing, the fields in argsBean have been updated with the given
             //command line arguments
             
