@@ -13,6 +13,9 @@ public class CommandLineArgs {
     @Option(required = false, name = "-p", usage = "Peer")
     private String peer;
     
+    @Option(required = false, name = "-i", usage = "Identity")
+    private String identity;
+    
     @Option(required = true, name = "-c", usage = "Command")
     private void setCommand(String command) throws CmdLineException {
         if (command.equals("list_peers") || command.equals("connect_peer") || command.equals("disconnect_peer")) {
@@ -47,5 +50,8 @@ public class CommandLineArgs {
         return Integer.parseInt(peer.split(":")[1]);
     }
     
+    public String getIdentity() {
+        return identity;
+    }
     
 }
