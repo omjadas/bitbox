@@ -45,6 +45,7 @@ public class RemotePeer extends Thread {
     private String host;
     private long port;
     private FileSystemManager fileSystemManager;
+
     private boolean isIncomingConnection = false;
     
     private Set<Action> waitingActions;
@@ -87,6 +88,7 @@ public class RemotePeer extends Thread {
             e.printStackTrace();
         }
     }
+    
 
     public RemotePeer(Socket socket, FileSystemManager fileSystemManager) {
         waitingActions = Collections.newSetFromMap(new ConcurrentHashMap<Action, Boolean>());
