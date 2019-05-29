@@ -24,7 +24,11 @@ public class ClientServer extends Thread {
 
     public void run() {
         while (true) {
-
+            try {
+                new RemoteClient(serverSocket.accept());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
