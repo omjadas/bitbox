@@ -117,7 +117,6 @@ public class Client {
 
     private static SecretKeySpec decryptKey(PrivateKey privateKey, String key) {
         try {
-            System.out.println("decrypting");
             Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
             cipher.init(Cipher.DECRYPT_MODE, privateKey);
             return new SecretKeySpec(cipher.doFinal(Base64.getDecoder().decode(key)), "AES");
