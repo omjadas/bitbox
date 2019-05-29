@@ -9,7 +9,7 @@ public class DisconnectPeerRequest implements Command {
 
     @Override
     public String getPayload() {
-
+        return null;
     }
     
 }

@@ -9,7 +9,7 @@ public class ListPeersResponse implements Command {
 
     @Override
     public String getPayload() {
-
+        return null;
     }
     
 }

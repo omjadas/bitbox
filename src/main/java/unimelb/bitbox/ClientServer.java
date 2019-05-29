@@ -11,10 +11,12 @@ public class ClientServer extends Thread {
     public ClientServer(int port, String authorized_keys) {
         String[] keys = authorized_keys.split(",", 0);
 
+        // Add keys from config to authorized_keys
         for (String key : keys) {
             ClientServer.authorized_keys.put(key.split(" ", 0)[2], key.split(" ", 0)[1]);
         }
 
+        // Create server socket
         try {
             this.serverSocket = new ServerSocket(port);
         } catch (IOException e) {
