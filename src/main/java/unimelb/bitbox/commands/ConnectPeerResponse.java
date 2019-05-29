@@ -8,7 +8,7 @@ public class ConnectPeerResponse implements Command {
     }
 
     @Override
-    public void send() {
+    public String getPayload() {
 
     }
     

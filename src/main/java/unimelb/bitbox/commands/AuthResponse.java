@@ -1,6 +1,10 @@
 package unimelb.bitbox.commands;
 
 public class AuthResponse implements Command {
+    private static final String command = "AUTH_RESPONSE";
+
+    public AuthResponse() {
+    }
 
     @Override
     public void execute() {
@@ -8,8 +12,8 @@ public class AuthResponse implements Command {
     }
 
     @Override
-    public void send() {
-
+    public String getPayload() {
+        
     }
     
 }

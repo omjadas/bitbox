@@ -8,7 +8,7 @@ public class ListPeersRequest implements Command {
     }
 
     @Override
-    public void send() {
+    public String getPayload() {
 
     }
     
