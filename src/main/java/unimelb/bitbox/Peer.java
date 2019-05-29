@@ -27,16 +27,20 @@ public class Peer extends Thread {
         peer.start();
         ServerMain server = new ServerMain();
         new PeerSearcher();
-        
+        ClientServer clientServer = new ClientServer(
+                Integer.parseInt(Configuration.getConfigurationValue("clientPort")),
+                Configuration.getConfigurationValue("authorized_keys"));
+        clientServer.start();
+
         Timer syncIntervalTimer = new Timer();
-        int syncInterval = Integer.parseInt(Configuration.getConfigurationValue("syncInterval"))*1000;
+        int syncInterval = Integer.parseInt(Configuration.getConfigurationValue("syncInterval")) * 1000;
         syncIntervalTimer.schedule(new GenerateSyncEventInterval(server), syncInterval, syncInterval);
     }
 
     public static Object getPeerSearchLock() {
         return Peer.peerSearchLock;
     }
-    
+
     public void run() {
         try {
             Peer.peerSearchLock = new Object();
