@@ -24,6 +24,10 @@ public class DisconnectPeerRequest implements Command {
 
     @Override
     public String getPayload() {
-        return null;
+        Document payload = new Document();
+        payload.append("command", command);
+        payload.append("host", this.host);
+        payload.append("port", this.port);
+        return payload.toJson();
     }
 }
