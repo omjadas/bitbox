@@ -11,8 +11,8 @@ public class AuthRequest implements Command {
     }
 
     @Override
-    public void execute() {
-
+    public String execute() {
+        return null;
     }
 
     @Override

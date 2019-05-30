@@ -68,22 +68,52 @@ public class RemoteClient {
     private void command() {
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), "UTF-8"));
-            Document command = Document.parse(in.readLine());
+            Document payload = Document.parse(decrypt(Document.parse(in.readLine()).getString("payload")));
 
-            // Command toExecute = null;
+            Command toExecute = null;
 
-            // if (command.getString("command").equals("list_peers")) {
-            // toExecute = new ListPeersRequest();
-            // } else if (command.getString("command").equals("connect_peer")) {
-            // toExecute = new ConnectPeerRequest();
-            // } else if (command.getString("command").equals("disconnect_peer")) {
-            // toExecute = new DisconnectPeerRequest();
-            // }
+            if (payload.getString("command").equals("LIST_PEERS_REQUEST")) {
+                toExecute = new ListPeersRequest();
+            } else if (payload.getString("command").equals("CONNECT_PEER_REQUEST")) {
+                // toExecute = new ConnectPeerRequest();
+            } else if (payload.getString("command").equals("DISCONNECT_PEER_REQUEST")) {
+                // toExecute = new DisconnectPeerRequest();
+            }
 
-            // toExecute.execute();
+            Document doc = new Document();
+
+            System.out.println(toExecute.execute());
+
+            doc.append("payload", encrypt(toExecute.execute()));
+
+            send(doc.toJson());
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private String encrypt(String payload) {
+        try {
+            Cipher cipher = Cipher.getInstance("AES");
+            cipher.init(Cipher.ENCRYPT_MODE, aes);
+            return Base64.getEncoder().encodeToString(cipher.doFinal(payload.getBytes()));
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException
+                | BadPaddingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private String decrypt(String payload) {
+        try {
+            Cipher cipher = Cipher.getInstance("AES");
+            cipher.init(Cipher.DECRYPT_MODE, aes);
+            return new String(cipher.doFinal(Base64.getDecoder().decode(payload)));
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException
+                | BadPaddingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**
@@ -115,9 +145,11 @@ public class RemoteClient {
         byte[] publicBytes = Base64.getDecoder().decode(publicKey);
         BigInteger exponentLength = new BigInteger(Arrays.copyOfRange(publicBytes, 11, 15));
         BigInteger exponent = new BigInteger(Arrays.copyOfRange(publicBytes, 15, 15 + exponentLength.intValue()));
-        BigInteger modulusLength = new BigInteger(Arrays.copyOfRange(publicBytes, 15 + exponentLength.intValue(), 19 + exponentLength.intValue()));
-        BigInteger modulus = new BigInteger(Arrays.copyOfRange(publicBytes, 19 + exponentLength.intValue(), 19 + exponentLength.intValue() + modulusLength.intValue()));
-        
+        BigInteger modulusLength = new BigInteger(
+                Arrays.copyOfRange(publicBytes, 15 + exponentLength.intValue(), 19 + exponentLength.intValue()));
+        BigInteger modulus = new BigInteger(Arrays.copyOfRange(publicBytes, 19 + exponentLength.intValue(),
+                19 + exponentLength.intValue() + modulusLength.intValue()));
+
         try {
             RSAPublicKeySpec spec = new RSAPublicKeySpec(modulus, exponent);
             KeyFactory factory = KeyFactory.getInstance("RSA");

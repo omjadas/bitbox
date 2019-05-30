@@ -95,18 +95,27 @@ public class Client {
 
             String payload = "";
 
-            // if (command.equals("list_peers")) {
-            //     payload = new ListPeersRequest().getPayload();
-            // } else if (command.equals("connect_peer")) {
-            //     payload = new ConnectPeerRequest(peer, (long) peerPort).getPayload();
-            // } else if (command.equals("disconnect_peer")) {
-            //     payload = new DisconnectPeerRequest().getPayload();
-            // }
+            if (command.equals("list_peers")) {
+                payload = new ListPeersRequest().getPayload();
+            } else if (command.equals("connect_peer")) {
+                payload = new ConnectPeerRequest(peer, (long) peerPort).getPayload();
+            } else if (command.equals("disconnect_peer")) {
+                payload = new DisconnectPeerRequest(peer, (long) peerPort).getPayload();
+            }
 
-            // send(encrypt(payload));
+            Document doc = new Document();
+            doc.append("payload", encrypt(payload));
+
+            send(doc.toJson());
+
+            try {
+                BufferedReader in = new BufferedReader(new InputStreamReader(Client.socket.getInputStream(), "UTF-8"));
+                System.out.println(decrypt(Document.parse(in.readLine()).getString("payload")));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
         } catch (CmdLineException e) {
-
             System.err.println(e.getMessage());
 
             // Print the usage to help the user understand the arguments expected
@@ -143,7 +152,27 @@ public class Client {
     }
 
     private static String encrypt(String payload) {
-        return payload;
+        try {
+            Cipher cipher = Cipher.getInstance("AES");
+            cipher.init(Cipher.ENCRYPT_MODE, Client.aes);
+            return Base64.getEncoder().encodeToString(cipher.doFinal(payload.getBytes()));
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException
+                | BadPaddingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static String decrypt(String payload) {
+        try {
+            Cipher cipher = Cipher.getInstance("AES");
+            cipher.init(Cipher.DECRYPT_MODE, Client.aes);
+            return new String(cipher.doFinal(Base64.getDecoder().decode(payload)));
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException
+                | BadPaddingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private static void send(String payload) {
