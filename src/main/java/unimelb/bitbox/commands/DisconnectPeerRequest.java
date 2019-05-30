@@ -1,5 +1,6 @@
 package unimelb.bitbox.commands;
 
+import unimelb.bitbox.RemotePeer;
 import unimelb.bitbox.util.Document;
 
 public class DisconnectPeerRequest implements Command {
@@ -19,7 +20,13 @@ public class DisconnectPeerRequest implements Command {
 
     @Override
     public String execute() {
-        return null;
+        for (RemotePeer remotePeer : RemotePeer.establishedPeers) {
+            if (remotePeer.getHost().equals(this.host) && remotePeer.getPort() == this.port) {
+                remotePeer.setIsConnected(false);
+                return new DisconnectPeerResponse(true, "disconnected from peer").getPayload();
+            }
+        }
+        return new DisconnectPeerResponse(false, "connection not active").getPayload();
     }
 
     @Override
