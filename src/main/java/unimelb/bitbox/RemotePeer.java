@@ -46,6 +46,8 @@ public class RemotePeer extends Thread {
     private long port;
     private FileSystemManager fileSystemManager;
 
+    private boolean isConnected = true;
+
     private boolean isIncomingConnection = false;
     
     private Set<Action> waitingActions;
@@ -84,11 +86,15 @@ public class RemotePeer extends Thread {
             this.start();
         } catch (ConnectException e) {
             log.info("Could not connect to: " + this.host + ":" + port);
+            this.isConnected = false;
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
     
+    public boolean getIsConnected() {
+        return this.isConnected;
+    }
 
     public RemotePeer(Socket socket, FileSystemManager fileSystemManager) {
         waitingActions = Collections.newSetFromMap(new ConcurrentHashMap<Action, Boolean>());

@@ -75,14 +75,12 @@ public class RemoteClient {
             if (payload.getString("command").equals("LIST_PEERS_REQUEST")) {
                 toExecute = new ListPeersRequest();
             } else if (payload.getString("command").equals("CONNECT_PEER_REQUEST")) {
-                // toExecute = new ConnectPeerRequest();
+                toExecute = new ConnectPeerRequest(payload);
             } else if (payload.getString("command").equals("DISCONNECT_PEER_REQUEST")) {
-                // toExecute = new DisconnectPeerRequest();
+                toExecute = new DisconnectPeerRequest(payload);
             }
 
             Document doc = new Document();
-
-            System.out.println(toExecute.execute());
 
             doc.append("payload", encrypt(toExecute.execute()));
 
