@@ -1,11 +1,5 @@
 package unimelb.bitbox;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.ConnectException;
-import java.net.Socket;
-import java.net.SocketException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,12 +27,11 @@ import unimelb.bitbox.actions.InvalidProtocol;
 import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
-import unimelb.bitbox.util.GenericSocket;
-import unimelb.bitbox.util.GenericSocketFactory;
 import unimelb.bitbox.util.FileSystemManager.EVENT;
 import unimelb.bitbox.util.FileSystemManager.FileSystemEvent;
+import unimelb.bitbox.util.GenericSocket;
+import unimelb.bitbox.util.GenericSocketFactory;
 import unimelb.bitbox.util.SchemaValidator;
-import unimelb.bitbox.FileDescriptor;
 
 public class RemotePeer extends Thread {
     private static Logger log = Logger.getLogger(RemotePeer.class.getName());

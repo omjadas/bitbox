@@ -1,7 +1,6 @@
 package unimelb.bitbox;
 
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.security.NoSuchAlgorithmException;
 import java.util.Timer;
 import java.util.logging.Logger;
