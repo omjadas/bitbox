@@ -2,13 +2,10 @@ package unimelb.bitbox;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.ConnectException;
 import java.net.Socket;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -32,7 +29,6 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 
 import unimelb.bitbox.commands.AuthRequest;
-import unimelb.bitbox.commands.Command;
 import unimelb.bitbox.commands.ConnectPeerRequest;
 import unimelb.bitbox.commands.DisconnectPeerRequest;
 import unimelb.bitbox.commands.ListPeersRequest;
