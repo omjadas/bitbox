@@ -14,8 +14,8 @@ public class GenericUDPSocket implements GenericSocket {
     private DatagramSocket udpSocket;
     private DatagramPacket currentPacket;
 
-    private String clientHost;
-    private int clientPort;
+    private String peerHost;
+    private int peerPort;
 
     private int blockSize;
 
@@ -30,11 +30,11 @@ public class GenericUDPSocket implements GenericSocket {
     public GenericUDPSocket(DatagramSocket datagramSocket, int blockSize, String host, int port) {
         this.udpSocket = datagramSocket;
         this.blockSize = blockSize;
-        this.clientHost = host;
-        this.clientPort = port;
+        this.peerHost = host;
+        this.peerPort = port;
 
         try {
-            this.udpSocket.connect(new InetSocketAddress(this.clientHost, this.clientPort));
+            this.udpSocket.connect(new InetSocketAddress(this.peerHost, this.peerPort));
         } catch (SocketException e) {
             e.printStackTrace();
         }
@@ -44,11 +44,11 @@ public class GenericUDPSocket implements GenericSocket {
         this.udpSocket = datagramSocket;
         this.blockSize = blockSize;
         this.currentPacket = packet;
-        this.clientHost = this.currentPacket.getAddress().getHostAddress();
-        this.clientPort = this.currentPacket.getPort();
+        this.peerHost = this.currentPacket.getAddress().getHostAddress();
+        this.peerPort = this.currentPacket.getPort();
 
         try {
-            this.udpSocket.connect(new InetSocketAddress(this.clientHost, this.clientPort));
+            this.udpSocket.connect(new InetSocketAddress(this.peerHost, this.peerPort));
         } catch (SocketException e) {
             e.printStackTrace();
         }
@@ -79,7 +79,7 @@ public class GenericUDPSocket implements GenericSocket {
     public boolean send(String message) {
         try {
             DatagramPacket packet = new DatagramPacket(message.getBytes(), message.getBytes().length,
-                    InetAddress.getByName(this.clientHost), this.clientPort);
+                    InetAddress.getByName(this.peerHost), this.peerPort);
             
             this.udpSocket.send(packet);
             
