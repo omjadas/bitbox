@@ -57,4 +57,9 @@ public class GenericTCPSocket implements GenericSocket {
     public void disconnect() {
         // TODO Auto-generated method stub
     }
+
+    @Override
+    public int getBlockSize() {
+        return this.blockSize;
+    }
 }

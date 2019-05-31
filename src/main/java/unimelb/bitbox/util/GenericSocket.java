@@ -7,4 +7,6 @@ public interface GenericSocket {
     public boolean send(String message);
     
     public void disconnect();
+
+    public int getBlockSize();
 }
