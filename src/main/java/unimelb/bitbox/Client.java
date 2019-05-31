@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.security.InvalidKeyException;
@@ -71,15 +72,17 @@ public class Client {
 
             Client.privateKey = readPrivateKey();
 
+            // Connect to peer
             try {
                 Client.socket = new Socket(server, serverPort);
+                // Send AUTH_REQUEST to peer
                 send(new AuthRequest(identity).getPayload());
-            } catch (ConnectException e) {
+            } catch (IOException e) {
                 log.info("Could not connect to: " + server + ":" + serverPort);
-            } catch (Exception e) {
-                e.printStackTrace();
+                System.exit(0);
             }
 
+            // Receive AUTH_RESPONSE from peer
             try {
                 BufferedReader in = new BufferedReader(new InputStreamReader(Client.socket.getInputStream(), "UTF-8"));
                 Document incoming = Document.parse(in.readLine());
@@ -90,7 +93,8 @@ public class Client {
                     System.exit(0);
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                log.info("Unable to complete challenge response with peer");
+                System.exit(0);
             }
 
             String payload = "";
@@ -106,13 +110,16 @@ public class Client {
             Document doc = new Document();
             doc.append("payload", encrypt(payload));
 
+            // Send request to peer
             send(doc.toJson());
 
+            // Receive response from peer
             try {
                 BufferedReader in = new BufferedReader(new InputStreamReader(Client.socket.getInputStream(), "UTF-8"));
                 System.out.println(decrypt(Document.parse(in.readLine()).getString("payload")));
             } catch (IOException e) {
-                e.printStackTrace();
+                log.info("Unable to process response payload");
+                System.exit(0);
             }
 
         } catch (CmdLineException e) {
@@ -124,6 +131,13 @@ public class Client {
         }
     }
 
+    /**
+     * Decrypt an AES key using a private key
+     * 
+     * @param privateKey private key to decrypt the AES key with
+     * @param key        base64 encoded AES key
+     * @return SecretKeySpec created from decrypted AES key
+     */
     private static SecretKeySpec decryptKey(PrivateKey privateKey, String key) {
         try {
             Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
@@ -131,11 +145,17 @@ public class Client {
             return new SecretKeySpec(cipher.doFinal(Base64.getDecoder().decode(key)), "AES");
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException
                 | BadPaddingException e) {
-            e.printStackTrace();
+            log.info("Unable to decrypt aes key");
+            System.exit(0);
         }
         return null;
     }
 
+    /**
+     * Read a private key from a file
+     * 
+     * @return PrivateKey created from file
+     */
     private static PrivateKey readPrivateKey() {
         Security.addProvider(new BouncyCastleProvider());
         try {
@@ -146,11 +166,18 @@ public class Client {
             pemParser.close();
             return kp.getPrivate();
         } catch (IOException e) {
-            e.printStackTrace();
+            log.info("Unable to read private key from file");
+            System.exit(0);
         }
         return null;
     }
 
+    /**
+     * Encrypt a string using the secret key
+     * 
+     * @param payload String to encrypt
+     * @return Encrypted string
+     */
     private static String encrypt(String payload) {
         try {
             Cipher cipher = Cipher.getInstance("AES");
@@ -158,11 +185,18 @@ public class Client {
             return Base64.getEncoder().encodeToString(cipher.doFinal(payload.getBytes()));
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException
                 | BadPaddingException e) {
-            e.printStackTrace();
+            log.info("Unable to encrypt request payload");
+            System.exit(0);
         }
         return null;
     }
 
+    /**
+     * Decrypt a string using the secret key
+     * 
+     * @param payload String to decrypt
+     * @return Decrypted string
+     */
     private static String decrypt(String payload) {
         try {
             Cipher cipher = Cipher.getInstance("AES");
@@ -170,11 +204,17 @@ public class Client {
             return new String(cipher.doFinal(Base64.getDecoder().decode(payload)));
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException
                 | BadPaddingException e) {
-            e.printStackTrace();
+            log.info("Unable to decrypt response payload");
+            System.exit(0);
         }
         return null;
     }
 
+    /**
+     * Send a string to the peer
+     * 
+     * @param payload String to send to the peer
+     */
     private static void send(String payload) {
         try {
             BufferedWriter out = new BufferedWriter(new OutputStreamWriter(Client.socket.getOutputStream(), "UTF8"));
