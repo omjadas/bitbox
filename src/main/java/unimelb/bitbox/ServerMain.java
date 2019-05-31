@@ -11,7 +11,7 @@ import unimelb.bitbox.util.FileSystemManager.FileSystemEvent;
 
 public class ServerMain implements FileSystemObserver {
     private static Logger log = Logger.getLogger(ServerMain.class.getName());
-    protected static FileSystemManager fileSystemManager;
+    public static FileSystemManager fileSystemManager;
 
     public ServerMain() throws NumberFormatException, IOException, NoSuchAlgorithmException {
         fileSystemManager = new FileSystemManager(Configuration.getConfigurationValue("path"), this);
@@ -23,8 +23,8 @@ public class ServerMain implements FileSystemObserver {
 
     @Override
     public void processFileSystemEvent(FileSystemEvent fileSystemEvent) {
-        for (Client client : Client.establishedClients) {
-            client.processEvent(fileSystemEvent);
+        for (RemotePeer peer : RemotePeer.establishedPeers) {
+            peer.processEvent(fileSystemEvent);
         }
     }
 }

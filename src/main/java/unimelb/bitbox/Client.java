@@ -1,305 +1,188 @@
 package unimelb.bitbox;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.ConnectException;
 import java.net.Socket;
-import java.net.SocketException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.Security;
+import java.util.Base64;
 import java.util.logging.Logger;
 
-import unimelb.bitbox.actions.Action;
-import unimelb.bitbox.actions.ConnectionRefused;
-import unimelb.bitbox.actions.DirectoryCreateRequest;
-import unimelb.bitbox.actions.DirectoryCreateResponse;
-import unimelb.bitbox.actions.DirectoryDeleteRequest;
-import unimelb.bitbox.actions.DirectoryDeleteResponse;
-import unimelb.bitbox.actions.FileBytesRequest;
-import unimelb.bitbox.actions.FileBytesResponse;
-import unimelb.bitbox.actions.FileCreateRequest;
-import unimelb.bitbox.actions.FileCreateResponse;
-import unimelb.bitbox.actions.FileDeleteRequest;
-import unimelb.bitbox.actions.FileDeleteResponse;
-import unimelb.bitbox.actions.FileModifyRequest;
-import unimelb.bitbox.actions.FileModifyResponse;
-import unimelb.bitbox.actions.HandshakeRequest;
-import unimelb.bitbox.actions.HandshakeResponse;
-import unimelb.bitbox.actions.InvalidProtocol;
-import unimelb.bitbox.util.Configuration;
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.SecretKeySpec;
+
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openssl.PEMKeyPair;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+
+import unimelb.bitbox.commands.AuthRequest;
+import unimelb.bitbox.commands.Command;
+import unimelb.bitbox.commands.ConnectPeerRequest;
+import unimelb.bitbox.commands.DisconnectPeerRequest;
+import unimelb.bitbox.commands.ListPeersRequest;
+import unimelb.bitbox.util.CommandLineArgs;
 import unimelb.bitbox.util.Document;
-import unimelb.bitbox.util.FileSystemManager;
-import unimelb.bitbox.util.FileSystemManager.EVENT;
-import unimelb.bitbox.util.FileSystemManager.FileSystemEvent;
-import unimelb.bitbox.util.SchemaValidator;
-import unimelb.bitbox.FileDescriptor;
 
-public class Client extends Thread {
-    private static Logger log = Logger.getLogger(Client.class.getName());
-    public static Set<Client> establishedClients = Collections.newSetFromMap(new ConcurrentHashMap<Client, Boolean>());
-    private Socket socket;
-    private String host;
-    private long port;
-    private FileSystemManager fileSystemManager;
-    private boolean isIncomingConnection = false;
-    
-    private Set<Action> waitingActions;
+public class Client {
+    private static Logger log = Logger.getLogger(Peer.class.getName());
+    private static final String privateKeyFile = "bitboxclient_rsa";
+    private static Socket socket;
+    private static PrivateKey privateKey;
+    private static SecretKeySpec aes;
 
-    public static HashMap<String, String> responseToRequest;
-    public static HashSet<String> validCommandsBeforeConnectionEstablished;
-    
-    static {
-        responseToRequest = new HashMap<>();
+    public static void main(String[] args) {
+        // Object that will store the parsed command line arguments
+        CommandLineArgs argsBean = new CommandLineArgs();
 
-        responseToRequest.put("FILE_CREATE_RESPONSE", "FILE_CREATE_REQUEST");
-        responseToRequest.put("FILE_DELETE_RESPONSE", "FILE_DELETE_REQUEST");
-        responseToRequest.put("FILE_MODIFY_RESPONSE", "FILE_MODIFY_REQUEST");
-        responseToRequest.put("DIRECTORY_CREATE_RESPONSE", "DIRECTORY_CREATE_REQUEST");
-        responseToRequest.put("DIRECTORY_DELETE_RESPONSE", "DIRECTORY_DELETE_REQUEST");
-        responseToRequest.put("FILE_BYTES_RESPONSE", "FILE_BYTES_REQUEST");
-
-        validCommandsBeforeConnectionEstablished = new HashSet<>();
-
-        validCommandsBeforeConnectionEstablished.add("HANDSHAKE_REQUEST");
-        validCommandsBeforeConnectionEstablished.add("HANDSHAKE_RESPONSE");
-        validCommandsBeforeConnectionEstablished.add("CONNECTION_REFUSED");
-    }
-
-    public Client(String host, int port, FileSystemManager fileSystemManager) {     
-        waitingActions = Collections.newSetFromMap(new ConcurrentHashMap<Action, Boolean>());
-        this.host = host;
-        this.port = port;
-        this.fileSystemManager = fileSystemManager;
+        // Parser provided by args4j
+        CmdLineParser parser = new CmdLineParser(argsBean);
         try {
-            this.socket = new Socket(host, port);
-            HandshakeRequest requestAction = new HandshakeRequest(this.socket,
-                    Configuration.getConfigurationValue("advertisedName"),
-                    Long.parseLong(Configuration.getConfigurationValue("port")), this);
-            requestAction.send();
-            this.start();
-        } catch (ConnectException e) {
-            log.info("Could not connect to: " + this.host + ":" + port);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+            // Parse the arguments
+            parser.parseArgument(args);
 
-    public Client(Socket socket, FileSystemManager fileSystemManager) {
-        waitingActions = Collections.newSetFromMap(new ConcurrentHashMap<Action, Boolean>());
-        this.socket = socket;
-        this.fileSystemManager = fileSystemManager;
+            // Get command, server and server port
+            String command = argsBean.getCommand();
+            String server = argsBean.getServer();
+            int serverPort = argsBean.getServerPort();
+            String identity = argsBean.getIdentity();
+            String peer = null;
+            int peerPort = 0;
 
-        if (Client.getNumberIncomingEstablishedConnections() == Peer.maximumIncommingConnections) {
-            new ConnectionRefused(socket, "connection limit reached", this).send();
-            return;
-        }
-
-        this.isIncomingConnection = true;
-        this.start();
-    }
-
-    /**
-     * Establish a connection with the client
-     */
-    public void establishConnection() {
-        establishedClients.add(this);
-    }
-
-    public static int getNumberIncomingEstablishedConnections() {
-        int numIncoming = 0;
-        for (Client client : Client.establishedClients) {
-            if (client.isIncomingConnection()) {
-                numIncoming++;
+            if (!command.equals("list_peers")) {
+                // Get peer and peer port
+                peer = argsBean.getPeer();
+                peerPort = argsBean.getPeerPort();
             }
-        }
 
-        return numIncoming;
-    }
+            Client.privateKey = readPrivateKey();
 
-    public boolean isIncomingConnection() {
-        return this.isIncomingConnection;
-    }
-
-    /**
-     * Return the host of the client
-     * 
-     * @return The host of the client
-     */
-    public String getHost() {
-        return host;
-    }
-
-    /**
-     * Return the port of the client
-     * 
-     * @return The port of the client
-     */
-    public long getPort() {
-        return port;
-    }
-
-    public void setHost(String host) {
-        this.host = host;
-    }
-
-    public void setPort(long port) {
-        this.port = port;
-    }
-
-    /**
-     * Determine if the message is valid
-     * 
-     * @param message The received message
-     * @return Boolean indication whether the message is valid
-     */
-    private boolean validateRequest(Document message) {
-        if (!SchemaValidator.validateSchema(message)) {
-            return false;
-        }
-
-        String command = message.getString("command");
-
-        if (!Client.establishedClients.contains(this)) {     
-            if (!validCommandsBeforeConnectionEstablished.contains(command)) {
-                return false;
+            try {
+                Client.socket = new Socket(server, serverPort);
+                send(new AuthRequest(identity).getPayload());
+            } catch (ConnectException e) {
+                log.info("Could not connect to: " + server + ":" + serverPort);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            
-            if (command == "HANDSHAKE_RESPONSE" || command == "CONNECTION_REFUSED") {                
-                return checkIfExpectingResponse(message);
-            } 
-        } else {
-            if (responseToRequest.containsKey(command)) {
-                return checkIfExpectingResponse(message);
-            } else if (!responseToRequest.containsValue(command)) {
-                return false;
-            }
-        }
 
-        return true;
-    }
-    
-    private boolean checkIfExpectingResponse(Document message) {
-        for (Action action : waitingActions) {
-            if (action.compare(message)) {
-                waitingActions.remove(action);
-                return true;
-            }
-        }
-        
-        return false;
-    }
-    
-    public void addToWaitingActions(Action action) {
-        waitingActions.add(action);
-    }
-
-    /**
-     * Create corresponding actions for each FileSystemEvent
-     * 
-     * @param fileSystemEvent The FileSystemEvent to process
-     */
-    public void processEvent(FileSystemEvent fileSystemEvent) {
-        Action action = null;
-
-        if (fileSystemEvent.event == EVENT.FILE_CREATE) {
-            action = new FileCreateRequest(socket, new FileDescriptor(fileSystemEvent.fileDescriptor),
-                    fileSystemEvent.pathName, this);
-        } else if (fileSystemEvent.event == EVENT.FILE_DELETE) {
-            action = new FileDeleteRequest(socket, new FileDescriptor(fileSystemEvent.fileDescriptor),
-                    fileSystemEvent.pathName, this);
-        } else if (fileSystemEvent.event == EVENT.FILE_MODIFY) {
-            action = new FileModifyRequest(socket, new FileDescriptor(fileSystemEvent.fileDescriptor),
-                    fileSystemEvent.pathName, this);
-        } else if (fileSystemEvent.event == EVENT.DIRECTORY_CREATE) {
-            action = new DirectoryCreateRequest(socket, fileSystemEvent.pathName, this);
-        } else if (fileSystemEvent.event == EVENT.DIRECTORY_DELETE) {
-            action = new DirectoryDeleteRequest(socket, fileSystemEvent.pathName, this);
-        }
-
-        action.send();
-    }
-
-    /**
-     * Return an appropriate action for the received message
-     * 
-     * @param message The received message
-     * @return An action corresponding to the received message
-     */
-    private Action getAction(Document message) {
-        Action action = null;
-        String command = message.getString("command");
-
-        if (command.equals("INVALID_PROTOCOL")) {
-            action = new InvalidProtocol(socket, message, this);
-        } else if (command.equals("CONNECTION_REFUSED")) {
-            action = new ConnectionRefused(socket, message, this);
-        } else if (command.equals("HANDSHAKE_REQUEST")) {
-            action = new HandshakeRequest(socket, message, this);
-        } else if (command.equals("HANDSHAKE_RESPONSE")) {
-            action = new HandshakeResponse(socket, message, this);
-        } else if (command.equals("FILE_CREATE_REQUEST")) {
-            action = new FileCreateRequest(socket, message, this);
-        } else if (command.equals("FILE_CREATE_RESPONSE")) {
-            action = new FileCreateResponse(socket, message, this);
-        } else if (command.equals("FILE_DELETE_REQUEST")) {
-            action = new FileDeleteRequest(socket, message, this);
-        } else if (command.equals("FILE_DELETE_RESPONSE")) {
-            action = new FileDeleteResponse(socket, message, this);
-        } else if (command.equals("FILE_MODIFY_REQUEST")) {
-            action = new FileModifyRequest(socket, message, this);
-        } else if (command.equals("FILE_MODIFY_RESPONSE")) {
-            action = new FileModifyResponse(socket, message, this);
-        } else if (command.equals("DIRECTORY_CREATE_REQUEST")) {
-            action = new DirectoryCreateRequest(socket, message, this);
-        } else if (command.equals("DIRECTORY_CREATE_RESPONSE")) {
-            action = new DirectoryCreateResponse(socket, message, this);
-        } else if (command.equals("DIRECTORY_DELETE_REQUEST")) {
-            action = new DirectoryDeleteRequest(socket, message, this);
-        } else if (command.equals("DIRECTORY_DELETE_RESPONSE")) {
-            action = new DirectoryDeleteResponse(socket, message, this);
-        } else if (command.equals("FILE_BYTES_REQUEST")) {
-            action = new FileBytesRequest(socket, message, this);
-        } else if (command.equals("FILE_BYTES_RESPONSE")) {
-            action = new FileBytesResponse(socket, message, this);
-        }
-
-        return action;
-    }
-
-    public void run() {
-        try {
-            BufferedReader in = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), "UTF-8"));
-
-            String inputLine;
-            while ((inputLine = in.readLine()) != null) {
-                log.info("Received from " + this.host + ":" + this.port + ": " + inputLine);
-                
-                
-                Document message = Document.parse(inputLine);
-
-                if (validateRequest(message)) {
-                    Action action = getAction(message);
-                    action.execute(fileSystemManager);
+            try {
+                BufferedReader in = new BufferedReader(new InputStreamReader(Client.socket.getInputStream(), "UTF-8"));
+                Document incoming = Document.parse(in.readLine());
+                if (incoming.getBoolean("status")) {
+                    aes = decryptKey(privateKey, incoming.getString("AES128"));
                 } else {
-                    Action invalid = new InvalidProtocol(socket, "Could not validate message:" + message.toJson(), this);
-                    invalid.send();
+                    log.info("Peer does not have public key");
+                    System.exit(0);
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
 
-        } catch (SocketException e) {
-            log.info("Client " + this.host + ":" + this.port + " has disconnected");
+            String payload = "";
 
-            Client.establishedClients.remove(this);
-            synchronized (Peer.getClientSearchLock()) {
-                Peer.getClientSearchLock().notifyAll();
+            if (command.equals("list_peers")) {
+                payload = new ListPeersRequest().getPayload();
+            } else if (command.equals("connect_peer")) {
+                payload = new ConnectPeerRequest(peer, (long) peerPort).getPayload();
+            } else if (command.equals("disconnect_peer")) {
+                payload = new DisconnectPeerRequest(peer, (long) peerPort).getPayload();
             }
-        } catch (IOException e) {
-            System.out.println("is this triggered");
+
+            Document doc = new Document();
+            doc.append("payload", encrypt(payload));
+
+            send(doc.toJson());
+
+            try {
+                BufferedReader in = new BufferedReader(new InputStreamReader(Client.socket.getInputStream(), "UTF-8"));
+                System.out.println(decrypt(Document.parse(in.readLine()).getString("payload")));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        } catch (CmdLineException e) {
+            System.err.println(e.getMessage());
+
+            // Print the usage to help the user understand the arguments expected
+            // by the program
+            parser.printUsage(System.err);
+        }
+    }
+
+    private static SecretKeySpec decryptKey(PrivateKey privateKey, String key) {
+        try {
+            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            cipher.init(Cipher.DECRYPT_MODE, privateKey);
+            return new SecretKeySpec(cipher.doFinal(Base64.getDecoder().decode(key)), "AES");
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException
+                | BadPaddingException e) {
             e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static PrivateKey readPrivateKey() {
+        Security.addProvider(new BouncyCastleProvider());
+        try {
+            PEMParser pemParser = new PEMParser(new FileReader(privateKeyFile));
+            JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider("BC");
+            Object object = pemParser.readObject();
+            KeyPair kp = converter.getKeyPair((PEMKeyPair) object);
+            pemParser.close();
+            return kp.getPrivate();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static String encrypt(String payload) {
+        try {
+            Cipher cipher = Cipher.getInstance("AES");
+            cipher.init(Cipher.ENCRYPT_MODE, Client.aes);
+            return Base64.getEncoder().encodeToString(cipher.doFinal(payload.getBytes()));
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException
+                | BadPaddingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static String decrypt(String payload) {
+        try {
+            Cipher cipher = Cipher.getInstance("AES");
+            cipher.init(Cipher.DECRYPT_MODE, Client.aes);
+            return new String(cipher.doFinal(Base64.getDecoder().decode(payload)));
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException
+                | BadPaddingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static void send(String payload) {
+        try {
+            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(Client.socket.getOutputStream(), "UTF8"));
+            out.write(payload);
+            out.newLine();
+            out.flush();
+        } catch (IOException e) {
+            log.info("Socket was closed while sending message");
         }
     }
 }

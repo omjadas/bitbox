@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 
-import unimelb.bitbox.Client;
+import unimelb.bitbox.RemotePeer;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
 
@@ -14,16 +14,16 @@ public class DirectoryCreateRequest implements Action {
     private Socket socket;
     private static final String command = "DIRECTORY_CREATE_REQUEST";
     private String pathName;
-    private Client client;
+    private RemotePeer remotePeer;
 
-    public DirectoryCreateRequest(Socket socket, String pathName, Client client) {
-        this.client = client;
+    public DirectoryCreateRequest(Socket socket, String pathName, RemotePeer remotePeer) {
+        this.remotePeer = remotePeer;
         this.socket = socket;
         this.pathName = pathName;
     }
 
-    public DirectoryCreateRequest(Socket socket, Document message, Client client) {
-        this.client = client;
+    public DirectoryCreateRequest(Socket socket, Document message, RemotePeer remotePeer) {
+        this.remotePeer = remotePeer;
         this.socket = socket;
         this.pathName = message.getString("pathName");
     }
@@ -43,7 +43,7 @@ public class DirectoryCreateRequest implements Action {
             message = "there was a problem creating the directory";
         }
 
-        Action response = new DirectoryCreateResponse(socket, pathName, message, status, client);
+        Action response = new DirectoryCreateResponse(socket, pathName, message, status, remotePeer);
         response.send();
     }
 
@@ -66,8 +66,8 @@ public class DirectoryCreateRequest implements Action {
             out.write(toJSON());
             out.newLine();
             out.flush();
-            log.info("Sent to " + this.client.getHost() + ":" + this.client.getPort() + ": " + toJSON());
-            this.client.addToWaitingActions(this);
+            log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
+            this.remotePeer.addToWaitingActions(this);
         } catch (IOException e) {
             log.info("Socket was closed while sending message");
         }
