@@ -9,7 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 
 public class GenericTCPSocket implements GenericSocket {
-    
+
     private Socket tcpSocket;
     private int blockSize;
     private BufferedReader in;
@@ -18,7 +18,7 @@ public class GenericTCPSocket implements GenericSocket {
     public GenericTCPSocket(Socket socket, int blockSize) {
         this.tcpSocket = socket;
         this.blockSize = blockSize;
-        
+
         try {
             this.in = new BufferedReader(new InputStreamReader(this.tcpSocket.getInputStream(), "UTF-8"));
             this.out = new BufferedWriter(new OutputStreamWriter(this.tcpSocket.getOutputStream(), "UTF8"));
@@ -29,7 +29,6 @@ public class GenericTCPSocket implements GenericSocket {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        
     }
 
     @Override
@@ -42,12 +41,12 @@ public class GenericTCPSocket implements GenericSocket {
     }
 
     @Override
-    public boolean send(String message) {        
+    public boolean send(String message) {
         try {
             this.out.write(message);
             this.out.newLine();
             this.out.flush();
-            
+
             return true;
         } catch (IOException e) {
             return false;
@@ -57,7 +56,5 @@ public class GenericTCPSocket implements GenericSocket {
     @Override
     public void disconnect() {
         // TODO Auto-generated method stub
-        
     }
-
 }

@@ -80,9 +80,9 @@ public class GenericUDPSocket implements GenericSocket {
         try {
             DatagramPacket packet = new DatagramPacket(message.getBytes(), message.getBytes().length,
                     InetAddress.getByName(this.peerHost), this.peerPort);
-            
+
             this.udpSocket.send(packet);
-            
+
             return true;
         } catch (Exception e) {
             return false;
@@ -92,7 +92,5 @@ public class GenericUDPSocket implements GenericSocket {
     @Override
     public void disconnect() {
         // TODO Auto-generated method stub
-
     }
-
 }
