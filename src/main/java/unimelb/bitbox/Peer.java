@@ -8,10 +8,11 @@ import java.util.logging.Logger;
 
 import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.GenerateSyncEventInterval;
+import unimelb.bitbox.util.GenericSocketFactory;
 
 public class Peer extends Thread {
     private static Logger log = Logger.getLogger(Peer.class.getName());
-    private ServerSocket serverSocket;
+    private GenericSocketFactory socketFactory;
     public static int maximumIncommingConnections;
     private static Object peerSearchLock;
 
@@ -42,16 +43,11 @@ public class Peer extends Thread {
     }
 
     public void run() {
-        try {
-            Peer.peerSearchLock = new Object();
-            serverSocket = new ServerSocket(Integer.parseInt(Configuration.getConfigurationValue("port")));
+        Peer.peerSearchLock = new Object();
+        socketFactory = new GenericSocketFactory();
 
-            while (true) {
-                new RemotePeer(serverSocket.accept(), ServerMain.fileSystemManager);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        while (true) {
+            new RemotePeer(socketFactory.createIncomingSocket(), ServerMain.fileSystemManager);
         }
     }
-
 }

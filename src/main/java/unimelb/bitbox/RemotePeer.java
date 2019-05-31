@@ -33,6 +33,8 @@ import unimelb.bitbox.actions.InvalidProtocol;
 import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
+import unimelb.bitbox.util.GenericSocket;
+import unimelb.bitbox.util.GenericSocketFactory;
 import unimelb.bitbox.util.FileSystemManager.EVENT;
 import unimelb.bitbox.util.FileSystemManager.FileSystemEvent;
 import unimelb.bitbox.util.SchemaValidator;
@@ -40,8 +42,9 @@ import unimelb.bitbox.FileDescriptor;
 
 public class RemotePeer extends Thread {
     private static Logger log = Logger.getLogger(RemotePeer.class.getName());
-    public static Set<RemotePeer> establishedPeers = Collections.newSetFromMap(new ConcurrentHashMap<RemotePeer, Boolean>());
-    private Socket socket;
+    public static Set<RemotePeer> establishedPeers = Collections
+            .newSetFromMap(new ConcurrentHashMap<RemotePeer, Boolean>());
+    private GenericSocket socket;
     private String host;
     private long port;
     private FileSystemManager fileSystemManager;
@@ -49,12 +52,12 @@ public class RemotePeer extends Thread {
     private boolean isConnected = true;
 
     private boolean isIncomingConnection = false;
-    
+
     private Set<Action> waitingActions;
 
     public static HashMap<String, String> responseToRequest;
     public static HashSet<String> validCommandsBeforeConnectionEstablished;
-    
+
     static {
         responseToRequest = new HashMap<>();
 
@@ -72,26 +75,23 @@ public class RemotePeer extends Thread {
         validCommandsBeforeConnectionEstablished.add("CONNECTION_REFUSED");
     }
 
-    public RemotePeer(String host, int port, FileSystemManager fileSystemManager) {     
+    public RemotePeer(String host, int port, FileSystemManager fileSystemManager) {
         waitingActions = Collections.newSetFromMap(new ConcurrentHashMap<Action, Boolean>());
         this.host = host;
         this.port = port;
         this.fileSystemManager = fileSystemManager;
         try {
-            this.socket = new Socket(host, port);
+            this.socket = new GenericSocketFactory().createOutgoingSocket(host, port);
             HandshakeRequest requestAction = new HandshakeRequest(this.socket,
                     Configuration.getConfigurationValue("advertisedName"),
                     Long.parseLong(Configuration.getConfigurationValue("port")), this);
             requestAction.send();
             this.start();
-        } catch (ConnectException e) {
-            log.info("Could not connect to: " + this.host + ":" + port);
-            this.isConnected = false;
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     public boolean getIsConnected() {
         return this.isConnected;
     }
@@ -100,7 +100,7 @@ public class RemotePeer extends Thread {
         this.isConnected = isConnected;
     }
 
-    public RemotePeer(Socket socket, FileSystemManager fileSystemManager) {
+    public RemotePeer(GenericSocket socket, FileSystemManager fileSystemManager) {
         waitingActions = Collections.newSetFromMap(new ConcurrentHashMap<Action, Boolean>());
         this.socket = socket;
         this.fileSystemManager = fileSystemManager;
@@ -175,14 +175,14 @@ public class RemotePeer extends Thread {
 
         String command = message.getString("command");
 
-        if (!RemotePeer.establishedPeers.contains(this)) {     
+        if (!RemotePeer.establishedPeers.contains(this)) {
             if (!validCommandsBeforeConnectionEstablished.contains(command)) {
                 return false;
             }
-            
-            if (command == "HANDSHAKE_RESPONSE" || command == "CONNECTION_REFUSED") {                
+
+            if (command == "HANDSHAKE_RESPONSE" || command == "CONNECTION_REFUSED") {
                 return checkIfExpectingResponse(message);
-            } 
+            }
         } else {
             if (responseToRequest.containsKey(command)) {
                 return checkIfExpectingResponse(message);
@@ -193,7 +193,7 @@ public class RemotePeer extends Thread {
 
         return true;
     }
-    
+
     private boolean checkIfExpectingResponse(Document message) {
         for (Action action : waitingActions) {
             if (action.compare(message)) {
@@ -201,10 +201,10 @@ public class RemotePeer extends Thread {
                 return true;
             }
         }
-        
+
         return false;
     }
-    
+
     public void addToWaitingActions(Action action) {
         waitingActions.add(action);
     }
@@ -283,35 +283,25 @@ public class RemotePeer extends Thread {
     }
 
     public void run() {
-        try {
-            BufferedReader in = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), "UTF-8"));
+        String inputLine;
+        while (((inputLine = socket.receive()) != null) && (isConnected == true)) {
+            log.info("Received from " + this.host + ":" + this.port + ": " + inputLine);
 
-            String inputLine;
-            while (((inputLine = in.readLine()) != null) && (isConnected == true)) {
-                log.info("Received from " + this.host + ":" + this.port + ": " + inputLine);
-                
-                
-                Document message = Document.parse(inputLine);
+            Document message = Document.parse(inputLine);
 
-                if (validateRequest(message)) {
-                    Action action = getAction(message);
-                    action.execute(fileSystemManager);
-                } else {
-                    Action invalid = new InvalidProtocol(socket, "Could not validate message:" + message.toJson(), this);
-                    invalid.send();
-                }
+            if (validateRequest(message)) {
+                Action action = getAction(message);
+                action.execute(fileSystemManager);
+            } else {
+                Action invalid = new InvalidProtocol(socket, "Could not validate message:" + message.toJson(), this);
+                invalid.send();
             }
-            RemotePeer.establishedPeers.remove(this);
-        } catch (SocketException e) {
-            log.info("Peer " + this.host + ":" + this.port + " has disconnected");
+        }
+        log.info("Peer " + this.host + ":" + this.port + " has disconnected");
 
-            RemotePeer.establishedPeers.remove(this);
-            synchronized (Peer.getPeerSearchLock()) {
-                Peer.getPeerSearchLock().notifyAll();
-            }
-        } catch (IOException e) {
-            System.out.println("is this triggered");
-            e.printStackTrace();
+        RemotePeer.establishedPeers.remove(this);
+        synchronized (Peer.getPeerSearchLock()) {
+            Peer.getPeerSearchLock().notifyAll();
         }
     }
 }
