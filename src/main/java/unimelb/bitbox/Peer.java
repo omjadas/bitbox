@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 
 import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.GenerateSyncEventInterval;
+import unimelb.bitbox.util.GenericSocket;
 import unimelb.bitbox.util.GenericSocketFactory;
 
 public class Peer extends Thread {
@@ -44,9 +45,12 @@ public class Peer extends Thread {
     public void run() {
         Peer.peerSearchLock = new Object();
         socketFactory = new GenericSocketFactory();
-
+        GenericSocket socket;
         while (true) {
-            new RemotePeer(socketFactory.createIncomingSocket(), ServerMain.fileSystemManager);
+            socket = socketFactory.createIncomingSocket();
+            if (socket != null) {
+                new RemotePeer(socket, ServerMain.fileSystemManager);
+            }
         }
     }
 }

@@ -7,6 +7,8 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 
+import unimelb.bitbox.RemotePeer;
+
 public class GenericUDPSocket implements GenericSocket {
 
     private DatagramSocket udpSocket;
@@ -38,12 +40,19 @@ public class GenericUDPSocket implements GenericSocket {
         }
     }
 
-    public GenericUDPSocket(DatagramSocket datagramSocket, DatagramPacket packet, int blockSize) {
+    public GenericUDPSocket(DatagramSocket datagramSocket, DatagramPacket packet, int blockSize)
+            throws PeerAlreadyConnectedException {
         this.udpSocket = datagramSocket;
         this.blockSize = blockSize;
         this.currentPacket = packet;
         this.peerHost = this.currentPacket.getAddress().getHostAddress();
         this.peerPort = this.currentPacket.getPort();
+
+        for (RemotePeer remotePeer : RemotePeer.establishedPeers) {
+            if (remotePeer.getHost().equals(peerHost) && remotePeer.getPort() == peerPort) {
+                throw new PeerAlreadyConnectedException("Peer already connected");
+            }
+        }
 
         try {
             this.udpSocket.connect(new InetSocketAddress(this.peerHost, this.peerPort));
