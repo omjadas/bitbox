@@ -1,28 +1,24 @@
 package unimelb.bitbox.actions;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.net.Socket;
-
 import unimelb.bitbox.RemotePeer;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
+import unimelb.bitbox.util.GenericSocket;
 
 public class DirectoryCreateRequest implements Action {
 
-    private Socket socket;
+    private GenericSocket socket;
     private static final String command = "DIRECTORY_CREATE_REQUEST";
     private String pathName;
     private RemotePeer remotePeer;
 
-    public DirectoryCreateRequest(Socket socket, String pathName, RemotePeer remotePeer) {
+    public DirectoryCreateRequest(GenericSocket socket, String pathName, RemotePeer remotePeer) {
         this.remotePeer = remotePeer;
         this.socket = socket;
         this.pathName = pathName;
     }
 
-    public DirectoryCreateRequest(Socket socket, Document message, RemotePeer remotePeer) {
+    public DirectoryCreateRequest(GenericSocket socket, Document message, RemotePeer remotePeer) {
         this.remotePeer = remotePeer;
         this.socket = socket;
         this.pathName = message.getString("pathName");
@@ -53,24 +49,17 @@ public class DirectoryCreateRequest implements Action {
         if (!correctCommand) {
             return false;
         }
-        
+
         boolean matchingPath = message.getString("pathName").equals(this.pathName);
-        
+
         return correctCommand && matchingPath;
     }
 
     @Override
     public void send() {
-        try {
-            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF8"));
-            out.write(toJSON());
-            out.newLine();
-            out.flush();
-            log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
-            this.remotePeer.addToWaitingActions(this);
-        } catch (IOException e) {
-            log.info("Socket was closed while sending message");
-        }
+        socket.send(toJSON());
+        log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
+        this.remotePeer.addToWaitingActions(this);
     }
 
     /**

@@ -1,21 +1,19 @@
 package unimelb.bitbox.actions;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 
+import unimelb.bitbox.FileDescriptor;
+import unimelb.bitbox.RemotePeer;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
-import unimelb.bitbox.RemotePeer;
-import unimelb.bitbox.FileDescriptor;
+import unimelb.bitbox.util.GenericSocket;
 
 public class FileBytesRequest extends Thread implements Action {
 
-    private Socket socket;
+    private GenericSocket socket;
     private static final String command = "FILE_BYTES_REQUEST";
     private FileDescriptor fileDescriptor;
     private String pathName;
@@ -24,7 +22,8 @@ public class FileBytesRequest extends Thread implements Action {
     private RemotePeer remotePeer;
     private FileSystemManager fileSystemManager;
 
-    public FileBytesRequest(Socket socket, FileDescriptor fileDescriptor, String pathName, long position, long length, RemotePeer remotePeer) {
+    public FileBytesRequest(GenericSocket socket, FileDescriptor fileDescriptor, String pathName, long position,
+            long length, RemotePeer remotePeer) {
         this.socket = socket;
         this.fileDescriptor = fileDescriptor;
         this.pathName = pathName;
@@ -33,7 +32,7 @@ public class FileBytesRequest extends Thread implements Action {
         this.remotePeer = remotePeer;
     }
 
-    public FileBytesRequest(Socket socket, Document message, RemotePeer remotePeer) {
+    public FileBytesRequest(GenericSocket socket, Document message, RemotePeer remotePeer) {
         this.socket = socket;
         this.fileDescriptor = new FileDescriptor(message);
         this.pathName = message.getString("pathName");
@@ -54,27 +53,20 @@ public class FileBytesRequest extends Thread implements Action {
         if (!correctCommand) {
             return false;
         }
-        
+
         boolean matchingPath = message.getString("pathName").equals(this.pathName);
         boolean matchingFileDesc = this.fileDescriptor.compare(new FileDescriptor(message));
         boolean matchingLength = message.getLong("length") == this.length;
         boolean matchingPos = message.getLong("position") == this.position;
-        
+
         return (correctCommand && matchingPath && matchingFileDesc && matchingLength && matchingPos);
     }
 
     @Override
     public void send() {
-        try {
-            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF8"));
-            out.write(toJSON());
-            out.newLine();
-            out.flush();
-            log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
-            this.remotePeer.addToWaitingActions(this);
-        } catch (IOException e) {
-            log.info("Socket was closed while sending message");
-        }
+        socket.send(toJSON());
+        log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
+        this.remotePeer.addToWaitingActions(this);
     }
 
     @Override

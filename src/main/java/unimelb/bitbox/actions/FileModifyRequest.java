@@ -1,33 +1,31 @@
 package unimelb.bitbox.actions;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.net.Socket;
 import java.security.NoSuchAlgorithmException;
 
-import unimelb.bitbox.util.Configuration;
+import unimelb.bitbox.FileDescriptor;
+import unimelb.bitbox.RemotePeer;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
-import unimelb.bitbox.RemotePeer;
-import unimelb.bitbox.FileDescriptor;
+import unimelb.bitbox.util.GenericSocket;
 
 public class FileModifyRequest implements Action {
 
-    private Socket socket;
+    private GenericSocket socket;
     private static String command = "FILE_MODIFY_REQUEST";
     private FileDescriptor fileDescriptor;
     private String pathName;
     private RemotePeer remotePeer;
 
-    public FileModifyRequest(Socket socket, FileDescriptor fileDescriptor, String pathName, RemotePeer remotePeer) {
+    public FileModifyRequest(GenericSocket socket, FileDescriptor fileDescriptor, String pathName,
+            RemotePeer remotePeer) {
         this.socket = socket;
         this.fileDescriptor = fileDescriptor;
         this.pathName = pathName;
         this.remotePeer = remotePeer;
     }
 
-    public FileModifyRequest(Socket socket, Document message, RemotePeer remotePeer) {
+    public FileModifyRequest(GenericSocket socket, Document message, RemotePeer remotePeer) {
         this.socket = socket;
         this.fileDescriptor = new FileDescriptor(message);
         this.pathName = message.getString("pathName");
@@ -64,13 +62,13 @@ public class FileModifyRequest implements Action {
         if (status) {
             try {
                 if (!fileSystemManager.checkShortcut(pathName)) {
-                    int blockSize = Integer.parseInt(Configuration.getConfigurationValue("blockSize"));
+                    int blockSize = socket.getBlockSize();
                     Action bytes = new FileBytesRequest(socket, fileDescriptor, pathName, 0,
                             fileDescriptor.fileSize < blockSize ? fileDescriptor.fileSize : blockSize, remotePeer);
                     bytes.send();
                 }
             } catch (NumberFormatException | NoSuchAlgorithmException | IOException e) {
-                int blockSize = Integer.parseInt(Configuration.getConfigurationValue("blockSize"));
+                int blockSize = socket.getBlockSize();
                 Action bytes = new FileBytesRequest(socket, fileDescriptor, pathName, 0,
                         fileDescriptor.fileSize < blockSize ? fileDescriptor.fileSize : blockSize, remotePeer);
                 bytes.send();
@@ -84,25 +82,18 @@ public class FileModifyRequest implements Action {
         if (!correctCommand) {
             return false;
         }
-                
+
         boolean matchingPath = message.getString("pathName").equals(this.pathName);
         boolean matchingFileDesc = this.fileDescriptor.compare(new FileDescriptor(message));
-        
+
         return (correctCommand && matchingPath && matchingFileDesc);
     }
 
     @Override
     public void send() {
-        try {
-            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF8"));
-            out.write(toJSON());
-            out.newLine();
-            out.flush();
-            log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
-            this.remotePeer.addToWaitingActions(this);
-        } catch (IOException e) {
-            log.info("Socket was closed while sending message");
-        }
+        socket.send(toJSON());
+        log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
+        this.remotePeer.addToWaitingActions(this);
     }
 
     /**

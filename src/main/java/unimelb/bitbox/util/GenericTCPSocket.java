@@ -55,7 +55,12 @@ public class GenericTCPSocket implements GenericSocket {
 
     @Override
     public void disconnect() {
-        // TODO Auto-generated method stub
+        try {
+            tcpSocket.close();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     @Override

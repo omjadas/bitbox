@@ -1,30 +1,28 @@
 package unimelb.bitbox.actions;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.net.Socket;
+import unimelb.bitbox.FileDescriptor;
+import unimelb.bitbox.RemotePeer;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
-import unimelb.bitbox.RemotePeer;
-import unimelb.bitbox.FileDescriptor;
+import unimelb.bitbox.util.GenericSocket;
 
 public class FileDeleteRequest implements Action {
 
-    private Socket socket;
+    private GenericSocket socket;
     private static final String command = "FILE_DELETE_REQUEST";
     private FileDescriptor fileDescriptor;
     private String pathName;
     private RemotePeer remotePeer;
 
-    public FileDeleteRequest(Socket socket, FileDescriptor fileDescriptor, String pathName, RemotePeer remotePeer) {
+    public FileDeleteRequest(GenericSocket socket, FileDescriptor fileDescriptor, String pathName,
+            RemotePeer remotePeer) {
         this.socket = socket;
         this.fileDescriptor = fileDescriptor;
         this.pathName = pathName;
         this.remotePeer = remotePeer;
     }
 
-    public FileDeleteRequest(Socket socket, Document message, RemotePeer remotePeer) {
+    public FileDeleteRequest(GenericSocket socket, Document message, RemotePeer remotePeer) {
         this.socket = socket;
         this.fileDescriptor = new FileDescriptor(message);
         this.pathName = message.getString("pathName");
@@ -56,26 +54,18 @@ public class FileDeleteRequest implements Action {
         if (!correctCommand) {
             return false;
         }
-        
-        
+
         boolean matchingPath = message.getString("pathName").equals(this.pathName);
         boolean matchingFileDesc = this.fileDescriptor.compare(new FileDescriptor(message));
-        
+
         return (correctCommand && matchingPath && matchingFileDesc);
     }
 
     @Override
     public void send() {
-        try {
-            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF8"));
-            out.write(toJSON());
-            out.newLine();
-            out.flush();
-            log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
-            this.remotePeer.addToWaitingActions(this);
-        } catch (IOException e) {
-            log.info("Socket was closed while sending message");
-        }
+        socket.send(toJSON());
+        log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
+        this.remotePeer.addToWaitingActions(this);
     }
 
     /**
