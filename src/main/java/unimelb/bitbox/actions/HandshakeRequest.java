@@ -71,5 +71,4 @@ public class HandshakeRequest implements Action {
 
         return message.toJson();
     }
-
 }
