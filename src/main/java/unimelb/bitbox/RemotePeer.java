@@ -46,6 +46,8 @@ public class RemotePeer extends Thread {
     private long port;
     private FileSystemManager fileSystemManager;
 
+    private boolean isConnected = true;
+
     private boolean isIncomingConnection = false;
     
     private Set<Action> waitingActions;
@@ -84,11 +86,19 @@ public class RemotePeer extends Thread {
             this.start();
         } catch (ConnectException e) {
             log.info("Could not connect to: " + this.host + ":" + port);
+            this.isConnected = false;
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
     
+    public boolean getIsConnected() {
+        return this.isConnected;
+    }
+
+    public void setIsConnected(boolean isConnected) {
+        this.isConnected = isConnected;
+    }
 
     public RemotePeer(Socket socket, FileSystemManager fileSystemManager) {
         waitingActions = Collections.newSetFromMap(new ConcurrentHashMap<Action, Boolean>());
@@ -277,7 +287,7 @@ public class RemotePeer extends Thread {
             BufferedReader in = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), "UTF-8"));
 
             String inputLine;
-            while ((inputLine = in.readLine()) != null) {
+            while (((inputLine = in.readLine()) != null) && (isConnected == true)) {
                 log.info("Received from " + this.host + ":" + this.port + ": " + inputLine);
                 
                 
@@ -291,7 +301,7 @@ public class RemotePeer extends Thread {
                     invalid.send();
                 }
             }
-
+            RemotePeer.establishedPeers.remove(this);
         } catch (SocketException e) {
             log.info("Peer " + this.host + ":" + this.port + " has disconnected");
 
