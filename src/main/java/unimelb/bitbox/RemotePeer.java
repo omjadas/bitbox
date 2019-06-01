@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
+import org.json.simple.JSONObject;
+
 import unimelb.bitbox.actions.Action;
 import unimelb.bitbox.actions.ConnectionRefused;
 import unimelb.bitbox.actions.DirectoryCreateRequest;
@@ -47,7 +49,7 @@ public class RemotePeer extends Thread {
     private boolean isIncomingConnection = false;
 
     private Set<Action> waitingActions;
-    private Set<String> receivedActions = new HashSet<String>();
+    private JSONObject lastAction = null;
 
     public static HashMap<String, String> responseToRequest;
     public static HashSet<String> validCommandsBeforeConnectionEstablished;
@@ -279,11 +281,11 @@ public class RemotePeer extends Thread {
         String inputLine;
         while (((inputLine = socket.receive()) != null) && (isConnected == true)) {
 
-            // Check if action has already been received
-            if (receivedActions.contains(inputLine)) {
+            // Check if action is a duplicate
+            if (lastAction == Document.parse(inputLine).getObj()) {
                 continue;
             }
-            receivedActions.add(inputLine);
+            lastAction = Document.parse(inputLine).getObj();
 
             log.info("Received from " + this.host + ":" + this.port + ": " + inputLine);
 

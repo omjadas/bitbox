@@ -145,4 +145,8 @@ public class Document {
 	public boolean getBoolean(String key){
 		return (boolean) obj.get(key);
 	}
+
+	public JSONObject getObj() {
+		return obj;
+	}
 }
