@@ -43,11 +43,6 @@ public class Peer extends Thread {
         int syncInterval = Integer.parseInt(Configuration.getConfigurationValue("syncInterval")) * 1000;
         syncIntervalTimer.schedule(new GenerateSyncEventInterval(server), syncInterval, syncInterval);
         
-        if (socketFactory.runtimeProtocol == Protocol.UDP) {
-            Timer timeoutTimer = new Timer();
-            timeoutTimer.schedule(new CheckResendAndTimeout(), 1, 1);
-            
-        } 
     }
 
     public static Object getPeerSearchLock() {
@@ -61,7 +56,7 @@ public class Peer extends Thread {
         while (true) {
             socket = socketFactory.createIncomingSocket();
             if (socket != null) {
-                Peer.connectedPeers.add(new RemotePeer(socket, ServerMain.fileSystemManager));
+                new RemotePeer(socket, ServerMain.fileSystemManager);
             }
         }
     }
