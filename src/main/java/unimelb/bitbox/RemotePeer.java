@@ -116,6 +116,10 @@ public class RemotePeer extends Thread {
     public void establishConnection() {
         establishedPeers.add(this);
     }
+    
+    public Set<Action> getWaitingActions() {
+        return this.waitingActions;
+    }
 
     public static int getNumberIncomingEstablishedConnections() {
         int numIncoming = 0;
@@ -306,6 +310,7 @@ public class RemotePeer extends Thread {
         log.info("Peer " + getHost() + ":" + getPort() + " has disconnected");
 
         RemotePeer.establishedPeers.remove(this);
+        Peer.connectedPeers.remove(this);
         synchronized (Peer.getPeerSearchLock()) {
             Peer.getPeerSearchLock().notifyAll();
         }

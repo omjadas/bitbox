@@ -41,7 +41,7 @@ public class PeerSearcher extends Thread {
             }           
 
             HostPort potentialPeer = potentialPeers.remove();
-            new RemotePeer(potentialPeer.host, potentialPeer.port, ServerMain.fileSystemManager);
+            Peer.connectedPeers.add(new RemotePeer(potentialPeer.host, potentialPeer.port, ServerMain.fileSystemManager));
         }
     }
 }

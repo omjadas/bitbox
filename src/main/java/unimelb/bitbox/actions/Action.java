@@ -6,6 +6,10 @@ import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
 
 public interface Action {
+    public long getSendTime();
+    
+    public int getAttempts();
+    
     public static Logger log = Logger.getLogger(Action.class.getName());
 
     /**
@@ -25,4 +29,6 @@ public interface Action {
      * Send the action to the corresponding peer
      */
     public void send();
+    
+    
 }

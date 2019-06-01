@@ -1,5 +1,7 @@
 package unimelb.bitbox.actions;
 
+import java.util.Date;
+
 import unimelb.bitbox.RemotePeer;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
@@ -13,6 +15,16 @@ public class DirectoryDeleteResponse implements Action {
     private String message;
     private Boolean status;
     private RemotePeer remotePeer;
+    private long sendTime;
+    private int attempts = 0;
+    
+    public long getSendTime() {
+        return sendTime;
+    }
+    
+    public int getAttempts() {
+        return attempts;
+    }
 
     public DirectoryDeleteResponse(GenericSocket socket, String pathName, String message, Boolean status,
             RemotePeer remotePeer) {
@@ -43,6 +55,8 @@ public class DirectoryDeleteResponse implements Action {
 
     @Override
     public void send() {
+        this.sendTime = (new Date()).getTime();
+        this.attempts += 1;
         socket.send(toJSON());
         log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
     }
