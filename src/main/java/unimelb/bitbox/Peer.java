@@ -9,6 +9,7 @@ import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.GenerateSyncEventInterval;
 import unimelb.bitbox.util.GenericSocket;
 import unimelb.bitbox.util.GenericSocketFactory;
+import unimelb.bitbox.util.GenericSocketFactory.Protocol;
 
 public class Peer extends Thread {
     private static Logger log = Logger.getLogger(Peer.class.getName());
@@ -32,10 +33,11 @@ public class Peer extends Thread {
                 Integer.parseInt(Configuration.getConfigurationValue("clientPort")),
                 Configuration.getConfigurationValue("authorized_keys"));
         clientServer.start();
-
-        Timer syncIntervalTimer = new Timer();
-        int syncInterval = Integer.parseInt(Configuration.getConfigurationValue("syncInterval")) * 1000;
-        syncIntervalTimer.schedule(new GenerateSyncEventInterval(server), syncInterval, syncInterval);
+        if (socketFactory.runtimeProtocol == Protocol.UDP) {
+            Timer syncIntervalTimer = new Timer();
+            int syncInterval = Integer.parseInt(Configuration.getConfigurationValue("syncInterval")) * 1000;
+            syncIntervalTimer.schedule(new GenerateSyncEventInterval(server), syncInterval, syncInterval);
+        }        
     }
 
     public static Object getPeerSearchLock() {
