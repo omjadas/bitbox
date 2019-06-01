@@ -26,7 +26,7 @@ public class InvalidProtocol implements Action {
 
     @Override
     public void execute(FileSystemManager fileSystemManager) {
-
+        socket.disconnect(remotePeer);
     }
 
     @Override
