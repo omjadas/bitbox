@@ -112,6 +112,8 @@ public class GenericUDPSocket implements GenericSocket {
 
     @Override
     public void disconnect(RemotePeer remotePeer) {
+        String hostPort = String.format("%s:%d", peerHost, peerPort);
+        GenericUDPSocket.queues.remove(hostPort);
         remotePeer.setIsConnected(false);
     }
 
