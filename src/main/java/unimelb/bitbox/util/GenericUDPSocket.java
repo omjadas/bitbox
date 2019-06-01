@@ -67,7 +67,7 @@ public class GenericUDPSocket implements GenericSocket {
             String receivedMessage = new String(this.currentPacket.getData());
             this.currentPacket = null;
 
-            return receivedMessage;
+            return receivedMessage.trim();
         } else {
             try {
                 byte[] receive = new byte[65535];
@@ -75,7 +75,7 @@ public class GenericUDPSocket implements GenericSocket {
                 this.udpSocket.receive(packet);
 
                 String receivedMessage = new String(packet.getData());
-                return receivedMessage;
+                return receivedMessage.trim();
             } catch (IOException e) {
                 return null;
             }
