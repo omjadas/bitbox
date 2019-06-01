@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -39,8 +40,12 @@ public class GenericUDPSocket implements GenericSocket {
         this.blockSize = blockSize;
         this.peerHost = host;
         this.peerPort = port;
-        String hostPort = String.format("%s:%d", host, port);
-        queues.put(hostPort, new LinkedList<String>());
+        try {
+            String hostPort = String.format("%s:%d", InetAddress.getByName(host).getHostAddress(), port);
+            queues.put(hostPort, new LinkedList<String>());
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
     }
 
     public GenericUDPSocket(int serverPort, int blockSize) throws PeerAlreadyConnectedException {
@@ -90,10 +95,15 @@ public class GenericUDPSocket implements GenericSocket {
 
     @Override
     public String receive() {
-        String hostPort = String.format("%s:%d", peerHost, peerPort);
-        while (queues.get(hostPort).size() == 0) {
+        try {
+            String hostPort = String.format("%s:%d", InetAddress.getByName(peerHost).getHostAddress(), peerPort);
+            while (queues.get(hostPort).size() == 0) {
+            }
+            return queues.get(hostPort).remove();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
         }
-        return queues.get(hostPort).remove();
+        return null;
     }
 
     @Override
@@ -112,7 +122,13 @@ public class GenericUDPSocket implements GenericSocket {
 
     @Override
     public void disconnect(RemotePeer remotePeer) {
-        remotePeer.setIsConnected(false);
+        try {
+            String hostPort = String.format("%s:%d", InetAddress.getByName(peerHost).getHostAddress(), peerPort);
+            GenericUDPSocket.queues.remove(hostPort);
+            remotePeer.setIsConnected(false);
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
