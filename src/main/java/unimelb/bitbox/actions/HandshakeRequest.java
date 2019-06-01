@@ -1,31 +1,27 @@
 package unimelb.bitbox.actions;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.net.Socket;
-
 import unimelb.bitbox.RemotePeer;
 import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
+import unimelb.bitbox.util.GenericSocket;
 
 public class HandshakeRequest implements Action {
 
-    private Socket socket;
+    private GenericSocket socket;
     private static final String command = "HANDSHAKE_REQUEST";
     private String host;
     private long port;
     private RemotePeer remotePeer;
 
-    public HandshakeRequest(Socket socket, String host, long port, RemotePeer remotePeer) {
+    public HandshakeRequest(GenericSocket socket, String host, long port, RemotePeer remotePeer) {
         this.socket = socket;
         this.host = host;
         this.port = port;
         this.remotePeer = remotePeer;
     }
 
-    public HandshakeRequest(Socket socket, Document message, RemotePeer remotePeer) {
+    public HandshakeRequest(GenericSocket socket, Document message, RemotePeer remotePeer) {
         this.socket = socket;
 
         String peerHost = ((Document) message.get("hostPort")).getString("host");
@@ -33,7 +29,7 @@ public class HandshakeRequest implements Action {
 
         this.remotePeer = remotePeer;
         remotePeer.setHost(peerHost);
-        remotePeer.setPort(peerPort);   
+        remotePeer.setPort(peerPort);
     }
 
     @Override
@@ -47,21 +43,15 @@ public class HandshakeRequest implements Action {
 
     @Override
     public boolean compare(Document message) {
-        return message.getString("command").equals("HANDSHAKE_RESPONSE") || message.getString("command").equals("CONNECTION_REFUSED");
+        return message.getString("command").equals("HANDSHAKE_RESPONSE")
+                || message.getString("command").equals("CONNECTION_REFUSED");
     }
 
     @Override
     public void send() {
-        try {
-            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF8"));
-            out.write(toJSON());
-            out.newLine();
-            out.flush();
-            log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
-            this.remotePeer.addToWaitingActions(this);
-        } catch (IOException e) {
-            log.info("Socket was closed while sending message");
-        }
+        socket.send(toJSON());
+        log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
+        this.remotePeer.addToWaitingActions(this);
     }
 
     /**
@@ -81,5 +71,4 @@ public class HandshakeRequest implements Action {
 
         return message.toJson();
     }
-
 }

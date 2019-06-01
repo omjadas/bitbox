@@ -1,17 +1,14 @@
 package unimelb.bitbox.actions;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.net.Socket;
+import unimelb.bitbox.FileDescriptor;
+import unimelb.bitbox.RemotePeer;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
-import unimelb.bitbox.RemotePeer;
-import unimelb.bitbox.FileDescriptor;
+import unimelb.bitbox.util.GenericSocket;
 
 public class FileCreateResponse implements Action {
 
-    private Socket socket;
+    private GenericSocket socket;
     private static final String command = "FILE_CREATE_RESPONSE";
     private FileDescriptor fileDescriptor;
     private String pathName;
@@ -19,7 +16,7 @@ public class FileCreateResponse implements Action {
     private Boolean status;
     private RemotePeer remotePeer;
 
-    public FileCreateResponse(Socket socket, FileDescriptor fileDescriptor, String pathName, String message,
+    public FileCreateResponse(GenericSocket socket, FileDescriptor fileDescriptor, String pathName, String message,
             Boolean status, RemotePeer remotePeer) {
         this.socket = socket;
         this.fileDescriptor = fileDescriptor;
@@ -29,7 +26,7 @@ public class FileCreateResponse implements Action {
         this.remotePeer = remotePeer;
     }
 
-    public FileCreateResponse(Socket socket, Document message, RemotePeer remotePeer) {
+    public FileCreateResponse(GenericSocket socket, Document message, RemotePeer remotePeer) {
         this.socket = socket;
         this.fileDescriptor = new FileDescriptor(message);
         this.pathName = message.getString("pathName");
@@ -50,15 +47,8 @@ public class FileCreateResponse implements Action {
 
     @Override
     public void send() {
-        try {
-            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF8"));
-            out.write(toJSON());
-            out.newLine();
-            out.flush();
-            log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
-        } catch (IOException e) {
-            log.info("Socket was closed while sending message");
-        }
+        socket.send(toJSON());
+        log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
     }
 
     /**

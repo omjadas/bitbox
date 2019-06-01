@@ -1,30 +1,26 @@
 package unimelb.bitbox.actions;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.net.Socket;
-
 import unimelb.bitbox.RemotePeer;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
+import unimelb.bitbox.util.GenericSocket;
 
 public class HandshakeResponse implements Action {
 
-    private Socket socket;
+    private GenericSocket socket;
     private static final String command = "HANDSHAKE_RESPONSE";
     private String host;
     private long port;
     private RemotePeer remotePeer;
 
-    public HandshakeResponse(Socket socket, String host, long port, RemotePeer remotePeer) {
+    public HandshakeResponse(GenericSocket socket, String host, long port, RemotePeer remotePeer) {
         this.socket = socket;
         this.host = host;
         this.port = port;
         this.remotePeer = remotePeer;
     }
 
-    public HandshakeResponse(Socket socket, Document message, RemotePeer remotePeer) {
+    public HandshakeResponse(GenericSocket socket, Document message, RemotePeer remotePeer) {
         this.socket = socket;
 
         String peerHost = ((Document) message.get("hostPort")).getString("host");
@@ -48,15 +44,8 @@ public class HandshakeResponse implements Action {
 
     @Override
     public void send() {
-        try {
-            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF8"));
-            out.write(toJSON());
-            out.newLine();
-            out.flush();
-            log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
-        } catch (IOException e) {
-            log.info("Socket was closed while sending message");
-        }
+        socket.send(toJSON());
+        log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
     }
 
     /**

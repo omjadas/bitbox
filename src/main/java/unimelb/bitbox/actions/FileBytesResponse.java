@@ -1,21 +1,19 @@
 package unimelb.bitbox.actions;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 
+import unimelb.bitbox.FileDescriptor;
+import unimelb.bitbox.RemotePeer;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
-import unimelb.bitbox.RemotePeer;
-import unimelb.bitbox.FileDescriptor;
+import unimelb.bitbox.util.GenericSocket;
 
 public class FileBytesResponse extends Thread implements Action {
 
-    private Socket socket;
+    private GenericSocket socket;
     private static final String command = "FILE_BYTES_RESPONSE";
     private FileDescriptor fileDescriptor;
     private String pathName;
@@ -27,8 +25,8 @@ public class FileBytesResponse extends Thread implements Action {
     private RemotePeer remotePeer;
     private FileSystemManager fileSystemManager;
 
-    public FileBytesResponse(Socket socket, FileDescriptor fileDescriptor, String pathName, long position, long length,
-            String content, String message, Boolean status, RemotePeer remotePeer) {
+    public FileBytesResponse(GenericSocket socket, FileDescriptor fileDescriptor, String pathName, long position,
+            long length, String content, String message, Boolean status, RemotePeer remotePeer) {
         this.socket = socket;
         this.fileDescriptor = fileDescriptor;
         this.pathName = pathName;
@@ -40,7 +38,7 @@ public class FileBytesResponse extends Thread implements Action {
         this.remotePeer = remotePeer;
     }
 
-    public FileBytesResponse(Socket socket, Document message, RemotePeer remotePeer) {
+    public FileBytesResponse(GenericSocket socket, Document message, RemotePeer remotePeer) {
         this.socket = socket;
         this.fileDescriptor = new FileDescriptor(message);
         this.pathName = message.getString("pathName");
@@ -65,15 +63,8 @@ public class FileBytesResponse extends Thread implements Action {
 
     @Override
     public void send() {
-        try {
-            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF8"));
-            out.write(toJSON());
-            out.newLine();
-            out.flush();
-            log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
-        } catch (IOException e) {
-            log.info("Socket was closed while sending message");
-        }
+        socket.send(toJSON());
+        log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
     }
 
     @Override
@@ -84,7 +75,8 @@ public class FileBytesResponse extends Thread implements Action {
                     Action bytes = new FileBytesRequest(socket, fileDescriptor, pathName, position + length,
                             (fileDescriptor.fileSize - (position + length)) < length
                                     ? (fileDescriptor.fileSize - (position + length))
-                                    : length, remotePeer);
+                                    : length,
+                            remotePeer);
                     bytes.send();
                 }
             }
