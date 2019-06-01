@@ -42,7 +42,7 @@ public class InvalidProtocol implements Action {
             Thread.sleep(500);
         } catch (InterruptedException e) {
         }
-        socket.disconnect();
+        socket.disconnect(remotePeer);
     }
 
     /**

@@ -96,8 +96,8 @@ public class GenericUDPSocket implements GenericSocket {
     }
 
     @Override
-    public void disconnect() {
-        // TODO Auto-generated method stub
+    public void disconnect(RemotePeer remotePeer) {
+        remotePeer.setIsConnected(false);
     }
 
     @Override

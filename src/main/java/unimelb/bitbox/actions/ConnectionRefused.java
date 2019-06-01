@@ -62,7 +62,7 @@ public class ConnectionRefused implements Action {
         } catch (InterruptedException e) {
         }
 
-        socket.disconnect();
+        socket.disconnect(remotePeer);
     }
 
     /**
