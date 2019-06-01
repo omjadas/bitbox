@@ -12,7 +12,7 @@ import unimelb.bitbox.util.GenericSocketFactory;
 
 public class Peer extends Thread {
     private static Logger log = Logger.getLogger(Peer.class.getName());
-    private GenericSocketFactory socketFactory;
+    public static GenericSocketFactory socketFactory;
     public static int maximumIncommingConnections;
     private static Object peerSearchLock;
 

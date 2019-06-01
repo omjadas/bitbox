@@ -22,7 +22,7 @@ public class DisconnectPeerRequest implements Command {
     public String execute() {
         for (RemotePeer remotePeer : RemotePeer.establishedPeers) {
             if (remotePeer.getHost().equals(this.host) && remotePeer.getPort() == this.port) {
-                remotePeer.setIsConnected(false);
+                remotePeer.disconnect();
                 return new DisconnectPeerResponse(true, "disconnected from peer").getPayload();
             }
         }
