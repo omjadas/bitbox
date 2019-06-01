@@ -1,6 +1,7 @@
 package unimelb.bitbox.actions;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 import unimelb.bitbox.Peer;
 import unimelb.bitbox.PeerSearcher;
@@ -17,7 +18,17 @@ public class ConnectionRefused implements Action {
     private String message;
     private Document parsedJSON;
     private RemotePeer remotePeer;
-
+    private long sendTime;
+    private int attempts = 0;
+    
+    public long getSendTime() {
+        return sendTime;
+    }
+    
+    public int getAttempts() {
+        return attempts;
+    }
+    
     public ConnectionRefused(GenericSocket socket, String message, RemotePeer remotePeer) {
         this.remotePeer = remotePeer;
         this.socket = socket;
@@ -55,6 +66,8 @@ public class ConnectionRefused implements Action {
 
     @Override
     public void send() {
+        this.sendTime = (new Date()).getTime();
+        this.attempts += 1;
         socket.send(toJSON());
         log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
         try {

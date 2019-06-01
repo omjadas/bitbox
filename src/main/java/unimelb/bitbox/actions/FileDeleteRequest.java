@@ -1,5 +1,7 @@
 package unimelb.bitbox.actions;
 
+import java.util.Date;
+
 import unimelb.bitbox.FileDescriptor;
 import unimelb.bitbox.RemotePeer;
 import unimelb.bitbox.util.Document;
@@ -13,6 +15,16 @@ public class FileDeleteRequest implements Action {
     private FileDescriptor fileDescriptor;
     private String pathName;
     private RemotePeer remotePeer;
+    private long sendTime;
+    private int attempts = 0;
+    
+    public long getSendTime() {
+        return sendTime;
+    }
+    
+    public int getAttempts() {
+        return attempts;
+    }
 
     public FileDeleteRequest(GenericSocket socket, FileDescriptor fileDescriptor, String pathName,
             RemotePeer remotePeer) {
@@ -63,6 +75,8 @@ public class FileDeleteRequest implements Action {
 
     @Override
     public void send() {
+        this.sendTime = (new Date()).getTime();
+        this.attempts += 1;
         socket.send(toJSON());
         log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
         this.remotePeer.addToWaitingActions(this);

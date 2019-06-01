@@ -1,5 +1,7 @@
 package unimelb.bitbox.actions;
 
+import java.util.Date;
+
 import unimelb.bitbox.RemotePeer;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.FileSystemManager;
@@ -11,6 +13,17 @@ public class InvalidProtocol implements Action {
     private static final String command = "INVALID_PROTOCOL";
     private String message;
     private RemotePeer remotePeer;
+    private long sendTime;
+    private int attempts = 0;
+    
+    public long getSendTime() {
+        return sendTime;
+    }
+    
+    public int getAttempts() {
+        return attempts;
+    }
+
 
     public InvalidProtocol(GenericSocket socket, String message, RemotePeer remotePeer) {
         this.socket = socket;
@@ -36,6 +49,8 @@ public class InvalidProtocol implements Action {
 
     @Override
     public void send() {
+        this.sendTime = (new Date()).getTime();
+        this.attempts += 1;
         socket.send(toJSON());
         log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
         try {

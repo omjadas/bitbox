@@ -2,6 +2,7 @@ package unimelb.bitbox.actions;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Date;
 
 import unimelb.bitbox.FileDescriptor;
 import unimelb.bitbox.RemotePeer;
@@ -16,7 +17,17 @@ public class FileModifyRequest implements Action {
     private FileDescriptor fileDescriptor;
     private String pathName;
     private RemotePeer remotePeer;
-
+    private long sendTime;
+    private int attempts = 0;
+    
+    public long getSendTime() {
+        return sendTime;
+    }
+    
+    public int getAttempts() {
+        return attempts;
+    }
+    
     public FileModifyRequest(GenericSocket socket, FileDescriptor fileDescriptor, String pathName,
             RemotePeer remotePeer) {
         this.socket = socket;
@@ -91,6 +102,8 @@ public class FileModifyRequest implements Action {
 
     @Override
     public void send() {
+        this.sendTime = (new Date()).getTime();
+        this.attempts += 1;
         socket.send(toJSON());
         log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
         this.remotePeer.addToWaitingActions(this);

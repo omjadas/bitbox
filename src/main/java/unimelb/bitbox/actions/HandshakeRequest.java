@@ -1,5 +1,7 @@
 package unimelb.bitbox.actions;
 
+import java.util.Date;
+
 import unimelb.bitbox.RemotePeer;
 import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.Document;
@@ -13,6 +15,16 @@ public class HandshakeRequest implements Action {
     private String host;
     private long port;
     private RemotePeer remotePeer;
+    private long sendTime;
+    private int attempts = 0;
+    
+    public long getSendTime() {
+        return sendTime;
+    }
+    
+    public int getAttempts() {
+        return attempts;
+    }
 
     public HandshakeRequest(GenericSocket socket, String host, long port, RemotePeer remotePeer) {
         this.socket = socket;
@@ -49,6 +61,8 @@ public class HandshakeRequest implements Action {
 
     @Override
     public void send() {
+        this.sendTime = (new Date()).getTime();
+        this.attempts += 1;
         socket.send(toJSON());
         log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
         this.remotePeer.addToWaitingActions(this);

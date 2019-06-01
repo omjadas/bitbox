@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.Date;
 
 import unimelb.bitbox.FileDescriptor;
 import unimelb.bitbox.RemotePeer;
@@ -24,6 +25,16 @@ public class FileBytesResponse extends Thread implements Action {
     private Boolean status;
     private RemotePeer remotePeer;
     private FileSystemManager fileSystemManager;
+    private long sendTime;
+    private int attempts = 0;
+    
+    public long getSendTime() {
+        return sendTime;
+    }
+    
+    public int getAttempts() {
+        return attempts;
+    }
 
     public FileBytesResponse(GenericSocket socket, FileDescriptor fileDescriptor, String pathName, long position,
             long length, String content, String message, Boolean status, RemotePeer remotePeer) {
@@ -63,6 +74,8 @@ public class FileBytesResponse extends Thread implements Action {
 
     @Override
     public void send() {
+        this.sendTime = (new Date()).getTime();
+        this.attempts += 1;
         socket.send(toJSON());
         log.info("Sent to " + this.remotePeer.getHost() + ":" + this.remotePeer.getPort() + ": " + toJSON());
     }
