@@ -64,18 +64,17 @@ public class GenericUDPSocket implements GenericSocket {
     @Override
     public String receive() {
         if (this.currentPacket != null) {
-            String receivedMessage = new String(this.currentPacket.getData());
+            String receivedMessage = new String(this.currentPacket.getData(), 0, this.currentPacket.getLength());
             this.currentPacket = null;
 
-            return receivedMessage.trim();
+            return receivedMessage;
         } else {
             try {
                 byte[] receive = new byte[65535];
                 DatagramPacket packet = new DatagramPacket(receive, receive.length);
                 this.udpSocket.receive(packet);
 
-                String receivedMessage = new String(packet.getData());
-                return receivedMessage.trim();
+                return new String(packet.getData(), 0, packet.getLength());
             } catch (IOException e) {
                 return null;
             }
