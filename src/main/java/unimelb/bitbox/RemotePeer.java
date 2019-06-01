@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
+import org.json.simple.JSONObject;
+
 import unimelb.bitbox.actions.Action;
 import unimelb.bitbox.actions.ConnectionRefused;
 import unimelb.bitbox.actions.DirectoryCreateRequest;
@@ -47,6 +49,7 @@ public class RemotePeer extends Thread {
     private boolean isIncomingConnection = false;
 
     private Set<Action> waitingActions;
+    private JSONObject lastAction = null;
 
     public static HashMap<String, String> responseToRequest;
     public static HashSet<String> validCommandsBeforeConnectionEstablished;
@@ -70,11 +73,11 @@ public class RemotePeer extends Thread {
 
     public RemotePeer(String host, int port, FileSystemManager fileSystemManager) {
         waitingActions = Collections.newSetFromMap(new ConcurrentHashMap<Action, Boolean>());
-        this.host = host;
-        this.port = port;
+        setHost(host);
+        setPort(port);
         this.fileSystemManager = fileSystemManager;
         try {
-            this.socket = new GenericSocketFactory().createOutgoingSocket(host, port);
+            this.socket = Peer.socketFactory.createOutgoingSocket(host, port);
             HandshakeRequest requestAction = new HandshakeRequest(this.socket,
                     Configuration.getConfigurationValue("advertisedName"),
                     Long.parseLong(Configuration.getConfigurationValue("port")), this);
@@ -135,7 +138,7 @@ public class RemotePeer extends Thread {
      * @return The host of the remote peer
      */
     public String getHost() {
-        return host;
+        return this.host;
     }
 
     /**
@@ -144,7 +147,7 @@ public class RemotePeer extends Thread {
      * @return The port of the remote peer
      */
     public long getPort() {
-        return port;
+        return this.port;
     }
 
     public void setHost(String host) {
@@ -183,7 +186,6 @@ public class RemotePeer extends Thread {
                 return false;
             }
         }
-
         return true;
     }
 
@@ -275,10 +277,21 @@ public class RemotePeer extends Thread {
         return action;
     }
 
+    public void disconnect() {
+        socket.disconnect(this);
+    }
+
     public void run() {
         String inputLine;
         while (((inputLine = socket.receive()) != null) && (isConnected == true)) {
-            log.info("Received from " + this.host + ":" + this.port + ": " + inputLine);
+
+            // Check if action is a duplicate
+            if (lastAction == Document.parse(inputLine).getObj()) {
+                continue;
+            }
+            lastAction = Document.parse(inputLine).getObj();
+
+            log.info("Received from " + getHost() + ":" + getPort() + ": " + inputLine);
 
             Document message = Document.parse(inputLine);
 
@@ -290,7 +303,7 @@ public class RemotePeer extends Thread {
                 invalid.send();
             }
         }
-        log.info("Peer " + this.host + ":" + this.port + " has disconnected");
+        log.info("Peer " + getHost() + ":" + getPort() + " has disconnected");
 
         RemotePeer.establishedPeers.remove(this);
         synchronized (Peer.getPeerSearchLock()) {

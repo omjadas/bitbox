@@ -8,6 +8,8 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 
+import unimelb.bitbox.RemotePeer;
+
 public class GenericTCPSocket implements GenericSocket {
 
     private Socket tcpSocket;
@@ -54,9 +56,10 @@ public class GenericTCPSocket implements GenericSocket {
     }
 
     @Override
-    public void disconnect() {
+    public void disconnect(RemotePeer remotePeer) {
         try {
             tcpSocket.close();
+            remotePeer.setIsConnected(false);
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

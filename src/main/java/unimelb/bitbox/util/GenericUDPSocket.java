@@ -4,15 +4,16 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.SocketException;
+import java.util.HashMap;
+import java.util.LinkedList;
 
 import unimelb.bitbox.RemotePeer;
 
 public class GenericUDPSocket implements GenericSocket {
 
-    private DatagramSocket udpSocket;
-    private DatagramPacket currentPacket;
+    private static DatagramSocket udpSocket = null;
+    private static HashMap<String, LinkedList<String>> queues = new HashMap<String, LinkedList<String>>();
 
     private String peerHost;
     private int peerPort;
@@ -27,58 +28,72 @@ public class GenericUDPSocket implements GenericSocket {
      * @param host
      * @param port
      */
-    public GenericUDPSocket(DatagramSocket datagramSocket, int blockSize, String host, int port) {
-        this.udpSocket = datagramSocket;
+    public GenericUDPSocket(int serverPort, int blockSize, String host, int port) {
+        if (GenericUDPSocket.udpSocket == null) {
+            try {
+                GenericUDPSocket.udpSocket = new DatagramSocket(serverPort);
+            } catch (SocketException e) {
+                e.printStackTrace();
+            }
+        }
         this.blockSize = blockSize;
         this.peerHost = host;
         this.peerPort = port;
+        String hostPort = String.format("%s:%d", host, port);
+        queues.put(hostPort, new LinkedList<String>());
+    }
 
-        try {
-            this.udpSocket.connect(new InetSocketAddress(this.peerHost, this.peerPort));
-        } catch (SocketException e) {
-            e.printStackTrace();
+    public GenericUDPSocket(int serverPort, int blockSize) throws PeerAlreadyConnectedException {
+        if (GenericUDPSocket.udpSocket == null) {
+            try {
+                GenericUDPSocket.udpSocket = new DatagramSocket(serverPort);
+            } catch (SocketException e) {
+                e.printStackTrace();
+            }
+        }
+        this.blockSize = blockSize;
+
+        DatagramPacket packet = getPacket();
+        String hostPort = String.format("%s:%d", packet.getAddress().getHostAddress(), packet.getPort());
+        this.peerHost = packet.getAddress().getHostAddress();
+        this.peerPort = packet.getPort();
+        if (queues.containsKey(hostPort)) {
+            queues.get(hostPort).add(new String(packet.getData(), 0, packet.getLength()));
+            throw new PeerAlreadyConnectedException("peer already connected");
+        } else {
+            queues.put(hostPort, new LinkedList<String>());
+            queues.get(hostPort).add(new String(packet.getData(), 0, packet.getLength()));
         }
     }
 
-    public GenericUDPSocket(DatagramSocket datagramSocket, DatagramPacket packet, int blockSize)
-            throws PeerAlreadyConnectedException {
-        this.udpSocket = datagramSocket;
-        this.blockSize = blockSize;
-        this.currentPacket = packet;
-        this.peerHost = this.currentPacket.getAddress().getHostAddress();
-        this.peerPort = this.currentPacket.getPort();
-
-        for (RemotePeer remotePeer : RemotePeer.establishedPeers) {
-            if (remotePeer.getHost().equals(peerHost) && remotePeer.getPort() == peerPort) {
-                throw new PeerAlreadyConnectedException("Peer already connected");
-            }
-        }
-
+    private DatagramPacket getPacket() {
+        DatagramPacket packet = null;
         try {
-            this.udpSocket.connect(new InetSocketAddress(this.peerHost, this.peerPort));
-        } catch (SocketException e) {
+            byte[] receive = new byte[65535];
+            packet = new DatagramPacket(receive, receive.length);
+            GenericUDPSocket.udpSocket.receive(packet);
+        } catch (IOException e) {
             e.printStackTrace();
+        }
+        return packet;
+    }
+
+    private void addToMap(DatagramPacket packet) {
+        String hostPort = String.format("%s:%d", packet.getAddress().getHostAddress(), packet.getPort());
+        if (queues.containsKey(hostPort)) {
+            queues.get(hostPort).add(new String(packet.getData(), 0, packet.getLength()));
+        } else {
+            queues.put(hostPort, new LinkedList<String>());
+            queues.get(hostPort).add(new String(packet.getData(), 0, packet.getLength()));
         }
     }
 
     @Override
     public String receive() {
-        if (this.currentPacket != null) {
-            String receivedMessage = new String(this.currentPacket.getData(), 0, this.currentPacket.getLength());
-            this.currentPacket = null;
-
-            return receivedMessage;
-        } else {
-            try {
-                byte[] receive = new byte[65535];
-                DatagramPacket packet = new DatagramPacket(receive, receive.length);
-                this.udpSocket.receive(packet);
-
-                return new String(packet.getData(), 0, packet.getLength());
-            } catch (IOException e) {
-                return null;
-            }
+        String hostPort = String.format("%s:%d", peerHost, peerPort);
+        while (queues.get(hostPort).size() == 0) {
         }
+        return queues.get(hostPort).remove();
     }
 
     @Override
@@ -87,7 +102,7 @@ public class GenericUDPSocket implements GenericSocket {
             DatagramPacket packet = new DatagramPacket(message.getBytes(), message.getBytes().length,
                     InetAddress.getByName(this.peerHost), this.peerPort);
 
-            this.udpSocket.send(packet);
+            GenericUDPSocket.udpSocket.send(packet);
 
             return true;
         } catch (Exception e) {
@@ -96,8 +111,8 @@ public class GenericUDPSocket implements GenericSocket {
     }
 
     @Override
-    public void disconnect() {
-        // TODO Auto-generated method stub
+    public void disconnect(RemotePeer remotePeer) {
+        remotePeer.setIsConnected(false);
     }
 
     @Override

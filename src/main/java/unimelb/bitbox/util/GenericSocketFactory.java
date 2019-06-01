@@ -1,9 +1,6 @@
 package unimelb.bitbox.util;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -43,13 +40,7 @@ public class GenericSocketFactory {
             if (this.runtimeProtocol == Protocol.TCP) {
                 return new GenericTCPSocket(this.serverSocket.accept(), this.blockSize);
             } else {
-                DatagramSocket socket = new DatagramSocket(null);
-                socket.setReuseAddress(true);
-                socket.bind(new InetSocketAddress(this.port));
-                byte[] receive = new byte[65535];
-                DatagramPacket packet = new DatagramPacket(receive, receive.length);
-                socket.receive(packet);
-                return new GenericUDPSocket(socket, packet, this.blockSize);
+                return new GenericUDPSocket(this.port, this.blockSize);
             }
         } catch (Exception e) {
             return null;
@@ -61,10 +52,7 @@ public class GenericSocketFactory {
             if (this.runtimeProtocol == Protocol.TCP) {
                 return new GenericTCPSocket(new Socket(host, port), this.blockSize);
             } else {
-                DatagramSocket socket = new DatagramSocket(null);
-                socket.setReuseAddress(true);
-                socket.bind(new InetSocketAddress(this.port));
-                return new GenericUDPSocket(socket, this.blockSize, host, port);
+                return new GenericUDPSocket(this.port, this.blockSize, host, port);
             }
         } catch (Exception e) {
             e.printStackTrace();

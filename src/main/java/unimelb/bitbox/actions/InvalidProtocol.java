@@ -26,7 +26,7 @@ public class InvalidProtocol implements Action {
 
     @Override
     public void execute(FileSystemManager fileSystemManager) {
-
+        socket.disconnect(remotePeer);
     }
 
     @Override
@@ -42,7 +42,7 @@ public class InvalidProtocol implements Action {
             Thread.sleep(500);
         } catch (InterruptedException e) {
         }
-        socket.disconnect();
+        socket.disconnect(remotePeer);
     }
 
     /**
