@@ -47,6 +47,7 @@ public class RemotePeer extends Thread {
     private boolean isIncomingConnection = false;
 
     private Set<Action> waitingActions;
+    private Set<String> receivedActions = new HashSet<String>();
 
     public static HashMap<String, String> responseToRequest;
     public static HashSet<String> validCommandsBeforeConnectionEstablished;
@@ -183,7 +184,6 @@ public class RemotePeer extends Thread {
                 return false;
             }
         }
-
         return true;
     }
 
@@ -278,6 +278,13 @@ public class RemotePeer extends Thread {
     public void run() {
         String inputLine;
         while (((inputLine = socket.receive()) != null) && (isConnected == true)) {
+
+            // Check if action has already been received
+            if (receivedActions.contains(inputLine)) {
+                continue;
+            }
+            receivedActions.add(inputLine);
+
             log.info("Received from " + this.host + ":" + this.port + ": " + inputLine);
 
             Document message = Document.parse(inputLine);
