@@ -180,7 +180,7 @@ public class RemotePeer extends Thread {
                 return false;
             }
 
-            if (command == "HANDSHAKE_RESPONSE" || command == "CONNECTION_REFUSED") {
+            if (command.equals("HANDSHAKE_RESPONSE") || command.equals("CONNECTION_REFUSED")) {
                 return checkIfExpectingResponse(message);
             }
         } else {

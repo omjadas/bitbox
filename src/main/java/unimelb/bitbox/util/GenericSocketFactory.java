@@ -5,12 +5,12 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class GenericSocketFactory {
-    enum Protocol {
+    public enum Protocol {
         TCP, UDP
     }
 
     private int port;
-    private Protocol runtimeProtocol;
+    public Protocol runtimeProtocol;
 
     private int blockSize;
 
